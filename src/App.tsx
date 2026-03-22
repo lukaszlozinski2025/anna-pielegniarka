@@ -249,7 +249,12 @@ export default function App(){
         {/* AVATAR VIDEO */}
         <div style={{width:280,flexShrink:0,display:"flex",flexDirection:"column",gap:14}}>
           <div style={{borderRadius:18,overflow:"hidden",height:340,border:"1px solid #1e2d3d",background:"#111820",position:"relative",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <video ref={videoRef} autoPlay playsInline
+            <iframe 
+  src="https://embed.liveavatar.com/v1/2c75530a-7960-47bb-8c3d-2ff29d992ff7"
+  allow="microphone"
+  title="LiveAvatar Anna"
+  style={{width:"100%",height:"100%",border:"none",borderRadius:18}}
+/>
               style={{width:"100%",height:"100%",objectFit:"cover",display:avatarStatus==="ready"?"block":"none",borderRadius:18}}/>
             {avatarStatus!=="ready"&&(
               <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,color:"#7a8fa8"}}>
