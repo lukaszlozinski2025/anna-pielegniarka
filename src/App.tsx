@@ -3,8 +3,8 @@ import StreamingAvatar, { AvatarQuality, StreamingEvents, TaskType } from "@heyg
 
 const ELEVEN_KEY = "sk_60b64add4fda15189176b7b96de00030bb9c448b083b2680";
 const ELEVEN_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
-const LIVEAVATAR_KEY = "WKLEJ_KLUCZ_LIVEAVATAR_TUTAJ";
-const AVATAR_ID = "WKLEJ_AVATAR_ID_ANN_TUTAJ";
+const LIVEAVATAR_KEY = "caecb27a-2628-11f1-8d28-066a7fa2e369";
+const AVATAR_ID = "fc9c1f9f-bc99-4fd9-a6b2-8b4b5669a046";
 
 const G = {
   bg:"#0d1117",panel:"#111820",card:"#161e28",border:"#1e2d3d",
