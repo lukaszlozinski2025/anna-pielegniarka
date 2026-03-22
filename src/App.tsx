@@ -77,9 +77,9 @@ function NurseAvatarSVG({speaking}:{speaking:boolean}) {
 }
 
 export default function App() {
-  const [heygenKey,setHeygenKey]=useState("");
-  const [heygenAvatarId]=useState("d086ff37eb784ac9b8b7aa2371ac9f1b");
-  const [useHeyGen,setUseHeyGen]=useState(false);
+  const [heygenKey,setHeygenKey]=useState("sk_V2_hgu_k08SY6A8aoR_3ijfRoCqlYrrbgrjY0kKSEAZojvLGOGc...");
+  const [heygenAvatarId]=useState("d086ff37eb784ac9b8b7aa2371ac9f1b")
+  const [useHeyGen,setUseHeyGen]=useState(true);
   const [step,setStep]=useState(0);
   const [answers,setAnswers]=useState<any>({});
   const [current,setCurrent]=useState("");
