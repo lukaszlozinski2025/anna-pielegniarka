@@ -7,7 +7,7 @@ export default async function handler(req: Request) {
   const res = await fetch("https://api.liveavatar.com/v1/sessions/token", {
     method: "POST",
     headers: {
-      "X-API-KEY": LIVEAVATAR_KEY,
+     "Authorization": `Bearer ${LIVEAVATAR_KEY}`,
       "Content-Type": "application/json",
       "accept": "application/json",
     },
