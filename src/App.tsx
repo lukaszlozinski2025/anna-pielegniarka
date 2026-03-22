@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from "react";
+import StreamingAvatar, { AvatarQuality, StreamingEvents, TaskType } from "@heygen/streaming-avatar";
 
 const ELEVEN_KEY = "sk_60b64add4fda15189176b7b96de00030bb9c448b083b2680";
 const ELEVEN_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
+const LIVEAVATAR_KEY = "WKLEJ_KLUCZ_LIVEAVATAR_TUTAJ";
+const AVATAR_ID = "WKLEJ_AVATAR_ID_ANN_TUTAJ";
 
 const G = {
   bg:"#0d1117",panel:"#111820",card:"#161e28",border:"#1e2d3d",
@@ -10,22 +13,22 @@ const G = {
   text:"#e8edf3",textMid:"#7a8fa8",textDim:"#3a4f63",green:"#2ecc8a",
 };
 
-const STEPS:any[] = [
+const STEPS:any[]=[
   {id:"welcome",phase:"Powitanie",nurseText:"Dzień dobry! Jestem Anna, Pana wirtualna pielęgniarka pierwszego kontaktu. Zanim trafi Pan do lekarza, przeprowadzę krótki wywiad medyczny. Wszystko jest poufne. Gotowy?",type:"confirm",field:null},
   {id:"imie",phase:"Dane osobowe",nurseText:"Jak mam się do Pana zwracać? Proszę podać imię i nazwisko.",type:"text",field:"imieNazwisko",placeholder:"np. Jan Kowalski",validate:(v:string)=>v.trim().split(" ").length>=2||"Proszę podać imię i nazwisko"},
-  {id:"pesel",phase:"Dane osobowe",nurseText:"Dziękuję. Proszę teraz podać numer PESEL.",type:"text",field:"pesel",placeholder:"11 cyfr",mask:true,validate:(v:string)=>/^\d{11}$/.test(v.replace(/\s/g,""))||"PESEL musi mieć 11 cyfr"},
+  {id:"pesel",phase:"Dane osobowe",nurseText:"Dziękuję. Proszę podać numer PESEL.",type:"text",field:"pesel",placeholder:"11 cyfr",mask:true,validate:(v:string)=>/^\d{11}$/.test(v.replace(/\s/g,""))||"PESEL musi mieć 11 cyfr"},
   {id:"dataUrodzenia",phase:"Dane osobowe",nurseText:"Proszę potwierdzić datę urodzenia.",type:"date",field:"dataUrodzenia"},
-  {id:"telefon",phase:"Dane osobowe",nurseText:"Na jaki numer telefonu mamy się z Panem kontaktować?",type:"text",field:"telefon",placeholder:"np. 600 123 456",validate:(v:string)=>/^[\d\s+\-]{9,}$/.test(v)||"Podaj poprawny numer"},
-  {id:"dolegliwosci",phase:"Dolegliwości",nurseText:"Co Pana do nas sprowadza? Proszę opisać główną dolegliwość swoimi słowami.",type:"textarea",field:"dolegliwoscGlowna",placeholder:"Opisz objawy..."},
-  {id:"lokalizacja",phase:"Dolegliwości",nurseText:"Gdzie dokładnie odczuwa Pan te dolegliwości?",type:"text",field:"lokalizacja",placeholder:"np. klatka piersiowa, głowa, brzuch..."},
-  {id:"charakter",phase:"Dolegliwości",nurseText:"Jak opisałby Pan charakter tego bólu lub dyskomfortu?",type:"chips",field:"charakter",options:["Tępy","Ostry","Piekący","Pulsujący","Uciskający","Kłujący","Promieniujący","Inny"]},
-  {id:"natezenie",phase:"Dolegliwości",nurseText:"W skali od 1 do 10, jak ocenia Pan nasilenie dolegliwości?",type:"scale",field:"natezenie"},
+  {id:"telefon",phase:"Dane osobowe",nurseText:"Na jaki numer telefonu mamy się kontaktować?",type:"text",field:"telefon",placeholder:"np. 600 123 456",validate:(v:string)=>/^[\d\s+\-]{9,}$/.test(v)||"Podaj poprawny numer"},
+  {id:"dolegliwosci",phase:"Dolegliwości",nurseText:"Co Pana do nas sprowadza? Proszę opisać główną dolegliwość.",type:"textarea",field:"dolegliwoscGlowna",placeholder:"Opisz objawy..."},
+  {id:"lokalizacja",phase:"Dolegliwości",nurseText:"Gdzie dokładnie odczuwa Pan te dolegliwości?",type:"text",field:"lokalizacja",placeholder:"np. klatka piersiowa, głowa..."},
+  {id:"charakter",phase:"Dolegliwości",nurseText:"Jak opisałby Pan charakter tego bólu?",type:"chips",field:"charakter",options:["Tępy","Ostry","Piekący","Pulsujący","Uciskający","Kłujący","Promieniujący","Inny"]},
+  {id:"natezenie",phase:"Dolegliwości",nurseText:"W skali od 1 do 10, jak silne są dolegliwości?",type:"scale",field:"natezenie"},
   {id:"czas",phase:"Dolegliwości",nurseText:"Od kiedy trwają te objawy?",type:"chips",field:"czasTrwania",options:["Kilka godzin","1–2 dni","Kilka dni","Ponad tydzień","Ponad miesiąc","Przewlekle"]},
-  {id:"czynniki",phase:"Dolegliwości",nurseText:"Czy coś nasila lub łagodzi te dolegliwości?",type:"textarea",field:"czynniki",placeholder:"np. nasila się przy ruchu, łagodnieje po odpoczynku..."},
-  {id:"choroby",phase:"Historia medyczna",nurseText:"Czy ma Pan stwierdzone choroby przewlekłe? Proszę zaznaczyć wszystkie które Pana dotyczą.",type:"chips",field:"chorobyPrzewlekle",multi:true,options:["Nadciśnienie","Cukrzyca t.1","Cukrzyca t.2","Choroba wieńcowa","Astma / POChP","Niedoczynność tarczycy","Niewydolność nerek","Depresja / lęki","Żadna z powyższych"]},
-  {id:"operacje",phase:"Historia medyczna",nurseText:"Czy był Pan kiedyś operowany? Jeśli tak, proszę podać jakiego rodzaju i kiedy.",type:"textarea",field:"operacje",placeholder:"np. wyrostek 2015, brak operacji..."},
-  {id:"leki",phase:"Leki i alergie",nurseText:"Proszę wymienić leki przyjmowane regularnie wraz z dawkami.",type:"textarea",field:"leki",placeholder:"np. Metformina 500mg 2x dziennie..."},
-  {id:"alergie",phase:"Leki i alergie",nurseText:"Czy ma Pan znane alergie na leki, pokarmy lub inne substancje?",type:"chips",field:"alergie",multi:true,options:["Penicylina","Aspiryna / NLPZ","Jod / kontrast","Lateks","Pokarmy","Brak alergii","Inne"]},
+  {id:"czynniki",phase:"Dolegliwości",nurseText:"Czy coś nasila lub łagodzi dolegliwości?",type:"textarea",field:"czynniki",placeholder:"np. nasila się przy ruchu..."},
+  {id:"choroby",phase:"Historia medyczna",nurseText:"Czy ma Pan stwierdzone choroby przewlekłe?",type:"chips",field:"chorobyPrzewlekle",multi:true,options:["Nadciśnienie","Cukrzyca t.1","Cukrzyca t.2","Choroba wieńcowa","Astma / POChP","Niedoczynność tarczycy","Niewydolność nerek","Depresja / lęki","Żadna z powyższych"]},
+  {id:"operacje",phase:"Historia medyczna",nurseText:"Czy był Pan kiedyś operowany?",type:"textarea",field:"operacje",placeholder:"np. wyrostek 2015..."},
+  {id:"leki",phase:"Leki i alergie",nurseText:"Proszę wymienić leki przyjmowane regularnie.",type:"textarea",field:"leki",placeholder:"np. Metformina 500mg..."},
+  {id:"alergie",phase:"Leki i alergie",nurseText:"Czy ma Pan znane alergie?",type:"chips",field:"alergie",multi:true,options:["Penicylina","Aspiryna / NLPZ","Jod / kontrast","Lateks","Pokarmy","Brak alergii","Inne"]},
   {id:"triage",phase:"Triage",nurseText:"Ostatnie pytanie. Jak czuje się Pan w tej chwili?",type:"triage",field:"stanAktualny"},
 ];
 
@@ -34,73 +37,19 @@ const PHASE_ICONS:any={"Powitanie":"👋","Dane osobowe":"📋","Dolegliwości":
 const SPECIALIST_MAP:any={"Nadciśnienie":"Kardiolog","Cukrzyca t.1":"Diabetolog","Cukrzyca t.2":"Diabetolog","Choroba wieńcowa":"Kardiolog","Astma / POChP":"Pulmonolog","Niedoczynność tarczycy":"Endokrynolog","Niewydolność nerek":"Nefrolog","Depresja / lęki":"Psychiatra"};
 const TRIAGE=[{label:"Dobrze",icon:"😊",color:"#2ecc8a",priority:3},{label:"Średnio",icon:"😐",color:"#f0a340",priority:2},{label:"Źle",icon:"😟",color:"#e05a6a",priority:1},{label:"Bardzo źle",icon:"😰",color:"#cc2244",priority:0}];
 
-function NurseAvatarSVG({speaking}:{speaking:boolean}) {
-  return (
-    <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(180deg,#0d2030 0%,#0a1520 100%)",position:"relative",overflow:"hidden",borderRadius:16}}>
-      <svg width="210" height="290" viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="110" cy="292" rx="92" ry="62" fill="#0a4040"/>
-        <path d="M73 178 Q110 200 147 178 L160 260 Q110 275 60 260 Z" fill="#0d5555"/>
-        <rect x="87" y="193" width="46" height="30" rx="5" fill="#083030"/>
-        <rect x="91" y="197" width="38" height="5" rx="2" fill="#00c2a8" opacity="0.8"/>
-        <rect x="96" y="155" width="28" height="30" rx="14" fill="#d4a882"/>
-        <ellipse cx="110" cy="115" rx="50" ry="54" fill="#d4a882"/>
-        <path d="M60 108 Q63 54 110 49 Q157 54 160 108 Q157 80 110 77 Q63 80 60 108Z" fill="#2a1a0a"/>
-        <ellipse cx="62" cy="115" rx="12" ry="22" fill="#2a1a0a"/>
-        <ellipse cx="158" cy="115" rx="12" ry="22" fill="#2a1a0a"/>
-        <ellipse cx="110" cy="60" rx="26" ry="22" fill="#2a1a0a"/>
-        <rect x="82" y="72" width="56" height="13" rx="6.5" fill="white" opacity="0.96"/>
-        <rect x="107" y="71" width="6" height="13" rx="1.5" fill="#e05a6a"/>
-        <rect x="100" y="76" width="20" height="4" rx="1.5" fill="#e05a6a"/>
-        <ellipse cx="93" cy="115" rx="10" ry="11" fill="white"/>
-        <ellipse cx="127" cy="115" rx="10" ry="11" fill="white"/>
-        <circle cx="94" cy="116" r="7" fill="#1a0a05"/>
-        <circle cx="128" cy="116" r="7" fill="#1a0a05"/>
-        <circle cx="96" cy="114" r="2.5" fill="white"/>
-        <circle cx="130" cy="114" r="2.5" fill="white"/>
-        {speaking&&<>
-          <circle cx="93" cy="115" r="10" fill="none" stroke="#00c2a8" strokeWidth="1.5" opacity="0.5"><animate attributeName="r" values="10;17;10" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0;0.5" dur="1.4s" repeatCount="indefinite"/></circle>
-          <circle cx="127" cy="115" r="10" fill="none" stroke="#00c2a8" strokeWidth="1.5" opacity="0.5"><animate attributeName="r" values="10;17;10" dur="1.4s" begin="0.35s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0;0.5" dur="1.4s" begin="0.35s" repeatCount="indefinite"/></circle>
-        </>}
-        <path d="M82 103 Q93 99 104 102" stroke="#2a1a0a" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-        <path d="M116 102 Q127 99 138 103" stroke="#2a1a0a" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-        <path d="M107 126 Q110 135 113 126" stroke="#c48060" strokeWidth="2" fill="none" strokeLinecap="round"/>
-        {speaking
-          ?<ellipse cx="110" cy="143" rx="14" ry="7" fill="#c06050"><animate attributeName="ry" values="7;3;7" dur="0.32s" repeatCount="indefinite"/></ellipse>
-          :<path d="M97 141 Q110 152 123 141" stroke="#c06050" strokeWidth="2.5" fill="none" strokeLinecap="round"/>}
-        <ellipse cx="80" cy="133" rx="11" ry="7" fill="#e08070" opacity="0.22"/>
-        <ellipse cx="140" cy="133" rx="11" ry="7" fill="#e08070" opacity="0.22"/>
-        <path d="M87 178 Q72 192 70 210 Q70 225 83 225 Q96 225 96 210 Q96 195 108 191" stroke="#00c2a8" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-        <circle cx="83" cy="227" r="11" fill="none" stroke="#00c2a8" strokeWidth="3.5"/>
-        <circle cx="83" cy="227" r="4.5" fill="#00c2a8"/>
-      </svg>
-      <div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",display:"flex",gap:4,alignItems:"flex-end",height:30}}>
-        {[1,2,3,4,5].map(i=>(
-          <div key={i} style={{width:4,borderRadius:2,background:"#00c2a8",height:speaking?undefined:5,opacity:speaking?1:0.2,
-            animation:speaking?`sbar${i} ${0.28+i*0.07}s ease-in-out infinite alternate`:"none"}}/>
-        ))}
-      </div>
-      <div style={{position:"absolute",top:12,left:12,background:"#00000088",borderRadius:8,padding:"5px 11px",fontSize:11,color:"#00c2a8",fontWeight:700}}>
-        {speaking?"🔊 Mówię...":"👩‍⚕️ ANNA"}
-      </div>
-    </div>
-  );
-}
-
-function MicButton({onResult,disabled}:{onResult:(text:string)=>void,disabled:boolean}) {
+function MicButton({onResult,disabled}:{onResult:(t:string)=>void,disabled:boolean}){
   const [listening,setListening]=useState(false);
   const recRef=useRef<any>(null);
-  function toggle() {
+  function toggle(){
     const SR=(window as any).SpeechRecognition||(window as any).webkitSpeechRecognition;
-    if(!SR){alert("Użyj przeglądarki Chrome aby korzystać z mikrofonu.");return;}
+    if(!SR){alert("Użyj Chrome.");return;}
     if(listening){recRef.current?.stop();setListening(false);return;}
-    const rec=new SR();
-    rec.lang="pl-PL";rec.continuous=false;rec.interimResults=false;
+    const rec=new SR();rec.lang="pl-PL";rec.continuous=false;rec.interimResults=false;
     rec.onresult=(e:any)=>{onResult(e.results[0][0].transcript);setListening(false);};
-    rec.onerror=()=>setListening(false);
-    rec.onend=()=>setListening(false);
+    rec.onerror=()=>setListening(false);rec.onend=()=>setListening(false);
     rec.start();recRef.current=rec;setListening(true);
   }
-  return (
+  return(
     <button onClick={toggle} disabled={disabled} title={listening?"Zatrzymaj":"Mów"}
       style={{width:48,height:48,borderRadius:14,border:`1.5px solid ${listening?"#e05a6a":"#00c2a840"}`,
         background:listening?"#e05a6a18":"#00c2a818",cursor:disabled?"not-allowed":"pointer",
@@ -113,44 +62,94 @@ function MicButton({onResult,disabled}:{onResult:(text:string)=>void,disabled:bo
   );
 }
 
-export default function App() {
+export default function App(){
   const [step,setStep]=useState(0);
   const [answers,setAnswers]=useState<any>({});
   const [current,setCurrent]=useState("");
   const [error,setError]=useState("");
   const [appPhase,setAppPhase]=useState("interview");
   const [chatLog,setChatLog]=useState<any[]>([]);
-  const [speaking,setSpeaking]=useState(false);
-  const [ttsStatus,setTtsStatus]=useState("");
-  const audioRef=useRef<HTMLAudioElement>(null);
+  const [avatarStatus,setAvatarStatus]=useState<"idle"|"loading"|"ready"|"error">("idle");
+  const [avatarError,setAvatarError]=useState("");
+  const videoRef=useRef<HTMLVideoElement>(null);
+  const avatarRef=useRef<StreamingAvatar|null>(null);
   const bottomRef=useRef<HTMLDivElement>(null);
   const s=STEPS[step];
   const progress=(step/(STEPS.length-1))*100;
   const currentPhaseIdx=PHASES.indexOf(s?.phase);
 
   useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"})},[chatLog]);
+
+  // Init LiveAvatar on mount
+  useEffect(()=>{
+    initAvatar();
+    return()=>{avatarRef.current?.stopAvatar();};
+  },[]);
+
   useEffect(()=>{
     const st=STEPS[step];if(!st||appPhase!=="interview") return;
-    setChatLog((prev:any)=>[...prev,{role:"nurse",text:st.nurseText}]);
-    speakText(st.nurseText);
+    setChatLog((p:any)=>[...p,{role:"nurse",text:st.nurseText}]);
+    speakAvatar(st.nurseText);
   },[step,appPhase]);
 
-  async function speakText(text:string){
-    setSpeaking(true);setTtsStatus("🔊 Mówię...");
+  async function initAvatar(){
+    setAvatarStatus("loading");
+    try{
+      // Get session token
+      const tokenRes=await fetch("https://api.heygen.com/v1/streaming.create_token",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":LIVEAVATAR_KEY},
+      });
+      const tokenData=await tokenRes.json();
+      const token=tokenData.data?.token;
+      if(!token) throw new Error("Brak tokenu");
+
+      const avatar=new StreamingAvatar({token});
+      avatarRef.current=avatar;
+
+      avatar.on(StreamingEvents.STREAM_READY,(e:any)=>{
+        if(videoRef.current&&e.detail){
+          videoRef.current.srcObject=e.detail;
+          videoRef.current.play();
+        }
+        setAvatarStatus("ready");
+      });
+      avatar.on(StreamingEvents.STREAM_DISCONNECTED,()=>setAvatarStatus("idle"));
+
+      await avatar.createStartAvatar({
+        quality:AvatarQuality.High,
+        avatarName:AVATAR_ID,
+        disableIdleTimeout:false,
+      });
+    }catch(e:any){
+      setAvatarStatus("error");
+      setAvatarError(e.message);
+    }
+  }
+
+  async function speakAvatar(text:string){
+    if(avatarRef.current&&avatarStatus==="ready"){
+      try{
+        await avatarRef.current.speak({text,taskType:TaskType.REPEAT});
+        return;
+      }catch{}
+    }
+    // Fallback: ElevenLabs
+    speakElevenLabs(text);
+  }
+
+  async function speakElevenLabs(text:string){
     try{
       const res=await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVEN_VOICE_ID}`,{
         method:"POST",headers:{"Content-Type":"application/json","xi-api-key":ELEVEN_KEY},
-        body:JSON.stringify({text,model_id:"eleven_multilingual_v2",voice_settings:{stability:0.55,similarity_boost:0.82,style:0.25}}),
+        body:JSON.stringify({text,model_id:"eleven_multilingual_v2",voice_settings:{stability:0.55,similarity_boost:0.82}}),
       });
-      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      if(!res.ok) return;
       const blob=await res.blob();const url=URL.createObjectURL(blob);
-      if(audioRef.current){
-        audioRef.current.src=url;
-        audioRef.current.onended=()=>{setSpeaking(false);setTtsStatus("");URL.revokeObjectURL(url);};
-        audioRef.current.onerror=()=>{setSpeaking(false);setTtsStatus("");};
-        audioRef.current.play();
-      }
-    }catch(e:any){setSpeaking(false);setTtsStatus(`⚠️ ${e.message}`);}
+      const audio=new Audio(url);
+      audio.onended=()=>URL.revokeObjectURL(url);
+      audio.play();
+    }catch{}
   }
 
   function addUserMsg(text:string){setChatLog((p:any)=>[...p,{role:"user",text}]);}
@@ -217,7 +216,7 @@ export default function App() {
               ))}
             </div>
           ))}
-          <button onClick={()=>{setStep(0);setAnswers({});setCurrent("");setChatLog([]);setAppPhase("interview");}}
+          <button onClick={()=>{setStep(0);setAnswers({});setCurrent("");setChatLog([]);setAppPhase("interview");initAvatar();}}
             style={{width:"100%",marginTop:8,background:"transparent",border:"1px solid #1e2d3d",color:"#7a8fa8",borderRadius:14,padding:14,fontSize:14,cursor:"pointer"}}>
             🔄 Nowy wywiad
           </button>
@@ -228,28 +227,44 @@ export default function App() {
 
   return(
     <div style={{minHeight:"100vh",background:"#0d1117",fontFamily:"system-ui",display:"flex",flexDirection:"column"}}>
-      <audio ref={audioRef} style={{display:"none"}}/>
       <style>{`
-        @keyframes sbar1{from{height:4px}to{height:9px}}@keyframes sbar2{from{height:4px}to{height:18px}}
-        @keyframes sbar3{from{height:4px}to{height:24px}}@keyframes sbar4{from{height:4px}to{height:15px}}
-        @keyframes sbar5{from{height:4px}to{height:7px}}
         @keyframes micPulse{from{box-shadow:0 0 0 0 #e05a6a40}to{box-shadow:0 0 0 10px #e05a6a00}}
+        @keyframes spin{to{transform:rotate(360deg)}}
         *{box-sizing:border-box}::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#1e2d3d;border-radius:2px}
         input,textarea{color-scheme:dark}input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5)}
         button:hover{opacity:.85!important}button{transition:opacity .15s}
       `}</style>
+
       <div style={{background:"#111820",borderBottom:"1px solid #1e2d3d",padding:"0 20px",height:52,display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,zIndex:10}}>
         <span style={{fontSize:14,fontWeight:800,color:"#00c2a8"}}>👩‍⚕️ ANNA</span>
         <span style={{fontSize:11,color:"#7a8fa8"}}>Pielęgniarka Pierwszego Kontaktu</span>
-        <div style={{flex:1}}/>{ttsStatus&&<span style={{fontSize:11,color:"#00c2a8"}}>{ttsStatus}</span>}
+        <div style={{flex:1}}/>
+        <span style={{fontSize:11,color: avatarStatus==="ready"?"#2ecc8a":avatarStatus==="loading"?"#f0a340":"#3a4f63"}}>
+          {avatarStatus==="ready"?"🟢 Avatar aktywny":avatarStatus==="loading"?"⏳ Łączę...":avatarStatus==="error"?"🔴 Błąd avatara":"⚪ Offline"}
+        </span>
         <span style={{fontSize:11,color:"#3a4f63"}}>Krok {step+1}/{STEPS.length}</span>
       </div>
       <div style={{height:3,background:"#1e2d3d"}}><div style={{height:"100%",width:`${progress}%`,background:"#00c2a8",transition:"width .4s ease"}}/></div>
+
       <div style={{flex:1,display:"flex",gap:20,padding:20,maxWidth:1100,margin:"0 auto",width:"100%"}}>
-        <div style={{width:260,flexShrink:0,display:"flex",flexDirection:"column",gap:14}}>
-          <div style={{borderRadius:18,overflow:"hidden",height:320,border:"1px solid #1e2d3d"}}>
-            <NurseAvatarSVG speaking={speaking}/>
+
+        {/* AVATAR VIDEO */}
+        <div style={{width:280,flexShrink:0,display:"flex",flexDirection:"column",gap:14}}>
+          <div style={{borderRadius:18,overflow:"hidden",height:340,border:"1px solid #1e2d3d",background:"#111820",position:"relative",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <video ref={videoRef} autoPlay playsInline
+              style={{width:"100%",height:"100%",objectFit:"cover",display:avatarStatus==="ready"?"block":"none",borderRadius:18}}/>
+            {avatarStatus!=="ready"&&(
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,color:"#7a8fa8"}}>
+                {avatarStatus==="loading"&&<div style={{width:40,height:40,border:"3px solid #00c2a840",borderTop:"3px solid #00c2a8",borderRadius:"50%",animation:"spin 1s linear infinite"}}/>}
+                {avatarStatus==="error"&&<div style={{fontSize:32}}>⚠️</div>}
+                <div style={{fontSize:13,textAlign:"center",padding:"0 16px"}}>
+                  {avatarStatus==="loading"?"Łączę z avatarem Ann...":avatarStatus==="error"?avatarError:"Inicjalizacja..."}
+                </div>
+                {avatarStatus==="error"&&<button onClick={initAvatar} style={{background:"#00c2a818",border:"1px solid #00c2a840",color:"#00c2a8",borderRadius:10,padding:"8px 16px",fontSize:12,cursor:"pointer"}}>Spróbuj ponownie</button>}
+              </div>
+            )}
           </div>
+
           <div style={{background:"#111820",border:"1px solid #1e2d3d",borderRadius:16,padding:16}}>
             {PHASES.map((p:any,i:number)=>(
               <div key={p} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",borderBottom:i<PHASES.length-1?"1px solid #1e2d3d":"none"}}>
@@ -263,10 +278,12 @@ export default function App() {
               </div>
             ))}
           </div>
-          <button onClick={()=>speakText(s?.nurseText)} style={{background:"#00c2a818",border:"1px solid #00c2a840",color:"#00c2a8",borderRadius:12,padding:"9px 16px",fontSize:13,fontWeight:600,cursor:"pointer"}}>
+          <button onClick={()=>speakAvatar(s?.nurseText)} style={{background:"#00c2a818",border:"1px solid #00c2a840",color:"#00c2a8",borderRadius:12,padding:"9px 16px",fontSize:13,fontWeight:600,cursor:"pointer"}}>
             🔊 Powtórz pytanie
           </button>
         </div>
+
+        {/* CHAT */}
         <div style={{flex:1,display:"flex",flexDirection:"column",gap:14,minWidth:0}}>
           <div style={{flex:1,background:"#111820",border:"1px solid #1e2d3d",borderRadius:18,padding:18,overflowY:"auto",maxHeight:400,display:"flex",flexDirection:"column",gap:12}}>
             {chatLog.map((m:any,i:number)=>(
@@ -280,34 +297,27 @@ export default function App() {
             ))}
             <div ref={bottomRef}/>
           </div>
+
           <div style={{background:"#111820",border:"1px solid #1e2d3d",borderRadius:18,padding:18,display:"flex",flexDirection:"column",gap:12}}>
             {(s?.type==="text"||s?.type==="textarea")&&<div style={{fontSize:11,color:"#3a4f63"}}>🎤 Możesz mówić lub pisać</div>}
 
             {s?.type==="confirm"&&<button onClick={()=>advance(null)} style={{background:"#00c2a8",color:"#000",border:"none",borderRadius:12,padding:14,fontSize:15,fontWeight:800,cursor:"pointer"}}>Tak, jestem gotowy →</button>}
-
             {s?.type==="text"&&<div style={{display:"flex",gap:10}}>
-              <input type={s.mask?"password":"text"} value={current} placeholder={s.placeholder}
-                onChange={(e:any)=>{setCurrent(e.target.value);setError("");}}
-                onKeyDown={(e:any)=>e.key==="Enter"&&tryNext()}
+              <input type={s.mask?"password":"text"} value={current} placeholder={s.placeholder} onChange={(e:any)=>{setCurrent(e.target.value);setError("");}} onKeyDown={(e:any)=>e.key==="Enter"&&tryNext()}
                 style={{flex:1,background:"#161e28",border:`1.5px solid ${error?"#e05a6a":"#1e2d3d"}`,borderRadius:12,padding:"12px 16px",fontSize:14,color:"#e8edf3",outline:"none",fontFamily:"inherit"}}/>
-              {!s.mask&&<MicButton onResult={handleVoice} disabled={speaking}/>}
+              {!s.mask&&<MicButton onResult={handleVoice} disabled={false}/>}
               <Btn onClick={tryNext}/>
             </div>}
-
             {s?.type==="date"&&<div style={{display:"flex",gap:10}}>
-              <input type="date" value={current} onChange={(e:any)=>setCurrent(e.target.value)}
-                style={{flex:1,background:"#161e28",border:"1.5px solid #1e2d3d",borderRadius:12,padding:"12px 16px",fontSize:14,color:"#e8edf3",outline:"none",fontFamily:"inherit"}}/>
+              <input type="date" value={current} onChange={(e:any)=>setCurrent(e.target.value)} style={{flex:1,background:"#161e28",border:"1.5px solid #1e2d3d",borderRadius:12,padding:"12px 16px",fontSize:14,color:"#e8edf3",outline:"none",fontFamily:"inherit"}}/>
               <Btn onClick={()=>{addUserMsg(current);advance(s.field,current);}}/>
             </div>}
-
             {s?.type==="textarea"&&<div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
-              <textarea value={current} placeholder={s.placeholder} rows={3} onChange={(e:any)=>setCurrent(e.target.value)}
-                onKeyDown={(e:any)=>e.key==="Enter"&&!e.shiftKey&&(e.preventDefault(),addUserMsg(current),advance(s.field,current))}
+              <textarea value={current} placeholder={s.placeholder} rows={3} onChange={(e:any)=>setCurrent(e.target.value)} onKeyDown={(e:any)=>e.key==="Enter"&&!e.shiftKey&&(e.preventDefault(),addUserMsg(current),advance(s.field,current))}
                 style={{flex:1,background:"#161e28",border:"1.5px solid #1e2d3d",borderRadius:12,padding:"12px 16px",fontSize:14,color:"#e8edf3",outline:"none",resize:"none",fontFamily:"inherit"}}/>
-              <MicButton onResult={handleVoice} disabled={speaking}/>
+              <MicButton onResult={handleVoice} disabled={false}/>
               <Btn onClick={()=>{addUserMsg(current);advance(s.field,current);}}/>
             </div>}
-
             {s?.type==="chips"&&<div style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
                 {s.options.map((opt:string)=>{const sel=s.multi?(Array.isArray(answers[s.field])&&answers[s.field].includes(opt)):answers[s.field]===opt;
@@ -315,7 +325,6 @@ export default function App() {
               </div>
               {s.multi&&<Btn label="Dalej →" onClick={()=>{addUserMsg([].concat(answers[s.field]||[]).join(", "));advance(s.field,answers[s.field]);}}/>}
             </div>}
-
             {s?.type==="scale"&&<div style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{display:"flex",gap:5}}>
                 {[1,2,3,4,5,6,7,8,9,10].map((n:number)=>{const sel=parseInt(answers[s.field])===n;const col=n<=3?"#2ecc8a":n<=6?"#f0a340":"#e05a6a";
@@ -324,7 +333,6 @@ export default function App() {
               <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#3a4f63"}}><span>😊 Brak bólu</span><span>😰 Najgorszy możliwy</span></div>
               <Btn onClick={()=>{addUserMsg(`${answers[s.field]}/10`);advance(s.field,answers[s.field]);}}/>
             </div>}
-
             {s?.type==="triage"&&<div style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
                 {TRIAGE.map((t:any)=>{const sel=answers[s.field]===t.priority;
@@ -334,7 +342,6 @@ export default function App() {
               <button onClick={()=>{addUserMsg(TRIAGE.find((t:any)=>t.priority===answers[s.field])?.label||"");advance(s.field,answers[s.field]);}}
                 style={{background:"#00c2a8",color:"#000",border:"none",borderRadius:12,padding:14,fontSize:15,fontWeight:800,cursor:"pointer"}}>Zakończ wywiad →</button>
             </div>}
-
             {error&&<div style={{fontSize:12,color:"#e05a6a",fontWeight:600}}>⚠️ {error}</div>}
           </div>
         </div>
