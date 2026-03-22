@@ -96,12 +96,10 @@ export default function App(){
     setAvatarStatus("loading");
     try{
       // Get session token
-      const tokenRes=await fetch("https://api.heygen.com/v1/streaming.create_token",{
-        method:"POST",
-        headers:{"Content-Type":"application/json","x-api-key":LIVEAVATAR_KEY},
+      const tokenRes=await fetch("/api/token",{
       });
       const tokenData=await tokenRes.json();
-      const token=tokenData.data?.token;
+      const token=tokenData.data?.session_token;
       if(!token) throw new Error("Brak tokenu");
 
       const avatar=new StreamingAvatar({token});
