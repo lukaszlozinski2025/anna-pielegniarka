@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-const ELEVEN_KEY = "sk_1a6f6cfd565c4231eac37c52981afd058eb1c8ca1e042856";
+const ELEVEN_KEY = "sk_60b64add4fda15189176b7b96de00030bb9c448b083b2680";
 const ELEVEN_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
 
 const G = {
