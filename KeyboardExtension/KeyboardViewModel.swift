@@ -73,6 +73,9 @@ final class KeyboardViewModel: ObservableObject {
         }
         input = text
         output = ""
+        // The tap on "Wklej" is the user's explicit action, so translate right
+        // away — one step instead of two. (Clipboard is still only read on tap.)
+        translate()
     }
 
     func translate() {
