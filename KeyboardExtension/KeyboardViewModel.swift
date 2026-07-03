@@ -1,16 +1,24 @@
 import Foundation
 import Combine
 
-/// Drives the keyboard panel. All host-app interactions (clipboard, inserting
-/// text, switching keyboards, full-access check) are injected by
-/// `KeyboardViewController` so this stays testable and UIKit-free.
+/// Drives the compact keyboard panel.
+///
+/// One input field feeds one "Przetłumacz" action. In **Auto** mode the model
+/// detects the language: foreign text → Polish, your Polish → the conversation
+/// language (remembered from the last detected foreign message). Long-pressing
+/// the mode chip switches to a manual **switch** (→ PL / → other language).
 @MainActor
 final class KeyboardViewModel: ObservableObject {
-    @Published var incoming = ""          // text pasted from the clipboard / to translate
-    @Published var translated = ""        // Polish translation of the incoming message
-    @Published var reply = ""             // Polish reply typed by the user
-    @Published var translatedReply = ""   // ready English answer to insert
-    @Published var status: String?        // short status / error line
+    enum Mode { case auto, manual }
+
+    @Published var input = ""
+    @Published var output = ""
+    @Published var outputLang: LanguageTag = .unknown
+    @Published var detectedForeign: LanguageTag?      // remembered conversation language
+    @Published var mode: Mode = .auto
+    @Published var manualToPolish = true              // manual switch: true = → PL, false = → other
+    @Published var expanded = false
+    @Published var status: String?
     @Published var busy = false
 
     let settings: AppGroupSettings
@@ -28,98 +36,109 @@ final class KeyboardViewModel: ObservableObject {
         self.service = TranslationServiceFactory.make(settings: settings)
     }
 
-    var defaultDirection: TranslationDirection { settings.defaultDirection }
+    // MARK: - Derived display
 
-    // MARK: - Receive workflow
+    var canInsert: Bool { !output.isEmpty }
 
-    /// Read the clipboard (only on explicit tap — never automatically).
+    /// The language the manual switch currently targets.
+    var manualTarget: LanguageTag { manualToPolish ? .polish : (detectedForeign ?? .english) }
+
+    /// Small label on the mode chip.
+    var modeLabel: String {
+        switch mode {
+        case .auto:   return "Auto"
+        case .manual: return "→ \(manualTarget.badge)"
+        }
+    }
+
+    /// Flags shown in the top bar once we know the languages.
+    var langIndicator: String? {
+        if !output.isEmpty {
+            let from = detectedForeign?.flag ?? outputLang.flag
+            return "\(from) → \(outputLang.flag)"
+        }
+        if let f = detectedForeign { return "\(f.flag) \(f.badge)" }
+        return nil
+    }
+
+    // MARK: - Actions
+
     func pasteFromClipboard() {
         status = nil
         guard settings.useMockService || hasFullAccess() else {
-            status = TranslationError.noFullAccess.errorDescription
-            return
+            status = TranslationError.noFullAccess.errorDescription; return
         }
         guard let text = readClipboard()?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else {
-            status = TranslationError.emptyClipboard.errorDescription
-            return
+            status = TranslationError.emptyClipboard.errorDescription; return
         }
-        incoming = text
-        translated = ""
+        input = text
+        output = ""
     }
 
-    func translateIncoming(direction: TranslationDirection) {
-        let text = incoming.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else {
-            status = TranslationError.emptyClipboard.errorDescription
-            return
+    func translate() {
+        let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { status = TranslationError.emptyInput.errorDescription; return }
+        guard settings.useMockService || hasFullAccess() else {
+            status = TranslationError.noFullAccess.errorDescription; return
         }
-        run { [service] in
-            switch direction {
-            case .enToPl: return try await service.detectAndTranslateToPolish(text: text)
-            case .plToEn: return try await service.translatePolishReplyToEnglish(text: text)
-            case .auto:   return try await service.autoDetectAndTranslate(text: text)
+        guard settings.isConfigured else {
+            status = TranslationError.missingAPIKey.errorDescription; return
+        }
+
+        status = nil
+        busy = true
+        let mode = self.mode
+        let hint = detectedForeign?.code
+        let manualTarget = self.manualTarget
+
+        Task {
+            do {
+                if mode == .auto {
+                    let r = try await self.service.smartTranslate(text: text, replyTargetHint: hint)
+                    self.output = r.text
+                    self.outputLang = r.targetLang
+                    if !r.sourceLang.code.isEmpty && r.sourceLang.code != "pl" {
+                        self.detectedForeign = r.sourceLang       // remember the conversation language
+                    }
+                } else {
+                    let t = try await self.service.translate(text: text, from: nil, to: manualTarget.name)
+                    self.output = t
+                    self.outputLang = manualTarget
+                }
+                self.busy = false
+                self.record(source: text, result: self.output)
+            } catch {
+                self.busy = false
+                self.status = (error as? TranslationError)?.errorDescription ?? error.localizedDescription
             }
-        } onSuccess: { [weak self] result in
-            self?.translated = result
-            self?.record(source: text, result: result, direction: direction)
         }
     }
 
-    // MARK: - Reply workflow
-
-    func translateReply() {
-        let text = reply.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else {
-            status = TranslationError.emptyInput.errorDescription
-            return
-        }
-        run { [service] in
-            try await service.translatePolishReplyToEnglish(text: text)
-        } onSuccess: { [weak self] result in
-            self?.translatedReply = result
-            self?.record(source: text, result: result, direction: .plToEn)
-        }
-    }
-
-    /// Insert the ready answer into the active WhatsApp field. Falls back to the
-    /// incoming translation if the user only used the receive workflow.
     func insertResult() {
-        let text = translatedReply.isEmpty ? translated : translatedReply
-        guard !text.isEmpty else {
-            status = "Najpierw przetłumacz tekst"
-            return
-        }
-        insert(text)
+        guard !output.isEmpty else { status = "Najpierw przetłumacz tekst"; return }
+        insert(output)
         status = "Wstawiono do pola wiadomości"
     }
 
-    // MARK: - Helpers
-
-    private func run(_ work: @escaping () async throws -> String,
-                     onSuccess: @escaping (String) -> Void) {
-        guard settings.useMockService || hasFullAccess() else {
-            status = TranslationError.noFullAccess.errorDescription
-            return
-        }
-        guard settings.isConfigured else {
-            status = TranslationError.missingAPIKey.errorDescription
-            return
-        }
-        status = nil
-        busy = true
-        Task {
-            do {
-                let result = try await work()
-                busy = false
-                onSuccess(result)
-            } catch {
-                busy = false
-                status = (error as? TranslationError)?.errorDescription ?? error.localizedDescription
-            }
-        }
+    /// Long-press on the chip: Auto ⇄ manual switch.
+    func toggleMode() {
+        mode = (mode == .auto) ? .manual : .auto
+        status = mode == .manual ? "Ręczny kierunek — dotknij, aby przełączyć" : nil
     }
 
-    private func record(source: String, result: String, direction: TranslationDirection) {
-        settings.addToHistory(TranslationRecord(source: source, result: result, direction: direction))
+    /// Tap on the chip while in manual mode: flip the direction.
+    func tapMode() {
+        if mode == .manual { manualToPolish.toggle() }
+    }
+
+    func toggleExpand() { expanded.toggle() }
+
+    func clearAll() {
+        input = ""; output = ""; outputLang = .unknown; status = nil
+    }
+
+    private func record(source: String, result: String) {
+        let dir: TranslationDirection = (outputLang.code == "pl") ? .enToPl : .plToEn
+        settings.addToHistory(TranslationRecord(source: source, result: result, direction: dir))
     }
 }

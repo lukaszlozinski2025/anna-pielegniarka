@@ -1,6 +1,6 @@
 import Foundation
 
-/// Direction of a translation request.
+/// Direction of a translation request (used by the main app's manual test/settings).
 enum TranslationDirection: String, CaseIterable, Codable {
     case enToPl   // English -> Polish  ("EN → PL")
     case plToEn   // Polish  -> English ("PL → EN")
@@ -31,6 +31,61 @@ enum ClaudeModel: String, CaseIterable, Codable, Identifiable {
         case .opus:   return "Claude Opus (najmocniejszy)"
         }
     }
+
+    /// Short label for compact UI.
+    var badge: String {
+        switch self {
+        case .haiku:  return "Haiku"
+        case .sonnet: return "Sonnet"
+        case .opus:   return "Opus"
+        }
+    }
+}
+
+/// A detected/target language, shown in the keyboard with a flag symbol.
+struct LanguageTag: Equatable {
+    /// ISO 639-1 code, lowercase. Empty = unknown / not yet detected.
+    let code: String
+
+    var flag: String { LanguageCatalog.flag(for: code) }
+    /// Short badge text, e.g. "EN". Falls back to a globe glyph label when unknown.
+    var badge: String { code.isEmpty ? "•" : code.uppercased() }
+    /// Polish name of the language, for prompts and the expanded options.
+    var name: String { LanguageCatalog.name(for: code) }
+
+    static let unknown = LanguageTag(code: "")
+    static let polish  = LanguageTag(code: "pl")
+    static let english = LanguageTag(code: "en")
+}
+
+/// Result of a "smart" (auto-detect) translation.
+struct TranslationResult {
+    let text: String
+    let sourceLang: LanguageTag
+    let targetLang: LanguageTag
+}
+
+/// Flags and Polish names for the languages the keyboard is likely to meet.
+enum LanguageCatalog {
+    static let flags: [String: String] = [
+        "pl": "🇵🇱", "en": "🇬🇧", "de": "🇩🇪", "es": "🇪🇸", "uk": "🇺🇦",
+        "fr": "🇫🇷", "it": "🇮🇹", "ru": "🇷🇺", "pt": "🇵🇹", "nl": "🇳🇱",
+        "cs": "🇨🇿", "sk": "🇸🇰", "tr": "🇹🇷", "sv": "🇸🇪", "no": "🇳🇴",
+        "da": "🇩🇰", "ro": "🇷🇴", "hu": "🇭🇺", "ar": "🇸🇦", "zh": "🇨🇳",
+        "ja": "🇯🇵", "ko": "🇰🇷"
+    ]
+
+    static let names: [String: String] = [
+        "pl": "polski", "en": "angielski", "de": "niemiecki", "es": "hiszpański",
+        "uk": "ukraiński", "fr": "francuski", "it": "włoski", "ru": "rosyjski",
+        "pt": "portugalski", "nl": "niderlandzki", "cs": "czeski", "sk": "słowacki",
+        "tr": "turecki", "sv": "szwedzki", "no": "norweski", "da": "duński",
+        "ro": "rumuński", "hu": "węgierski", "ar": "arabski", "zh": "chiński",
+        "ja": "japoński", "ko": "koreański"
+    ]
+
+    static func flag(for code: String) -> String { flags[code.lowercased()] ?? "🌐" }
+    static func name(for code: String) -> String { names[code.lowercased()] ?? (code.isEmpty ? "wykryty" : code.uppercased()) }
 }
 
 /// Errors surfaced to the UI. Messages are user-facing Polish strings.
