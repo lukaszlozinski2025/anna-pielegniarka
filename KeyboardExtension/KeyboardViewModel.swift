@@ -110,6 +110,7 @@ final class KeyboardViewModel: ObservableObject {
                 }
                 self.busy = false
                 self.record(source: text, result: self.output)
+                self.autoInsertIfReply()
             } catch {
                 self.busy = false
                 self.status = (error as? TranslationError)?.errorDescription ?? error.localizedDescription
@@ -121,6 +122,18 @@ final class KeyboardViewModel: ObservableObject {
         guard !output.isEmpty else { status = "Najpierw przetłumacz tekst"; return }
         insert(output)
         status = "Wstawiono do pola wiadomości"
+    }
+
+    /// When the result is an outgoing reply (translated into the conversation
+    /// language, not Polish), drop it straight into the WhatsApp field and reset
+    /// the panel for the next message. Polish results (incoming, for reading) are
+    /// left in the panel and can still be inserted manually with "Wstaw".
+    private func autoInsertIfReply() {
+        guard !output.isEmpty, !outputLang.code.isEmpty, outputLang.code != "pl" else { return }
+        insert(output)
+        status = "Wstawiono do WhatsApp — wyślij sam"
+        input = ""
+        output = ""
     }
 
     /// Long-press on the chip: Auto ⇄ manual switch.
