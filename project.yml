@@ -1,0 +1,51 @@
+# XcodeGen spec. Regenerate the .xcodeproj with:  xcodegen generate
+# (install once: brew install xcodegen). The committed AITranslate.xcodeproj is
+# generated from this file — if it ever gets out of sync, delete it and rerun.
+name: AITranslate
+options:
+  bundleIdPrefix: com.redmal
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1"        # iPhone
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""               # <-- set your Apple Developer Team ID in Xcode
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  AITranslate:
+    type: application
+    platform: iOS
+    sources:
+      - path: AITranslate
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.redmal.aitranslate
+        INFOPLIST_FILE: AITranslate/Info.plist
+        CODE_SIGN_ENTITLEMENTS: AITranslate/AITranslate.entitlements
+        GENERATE_INFOPLIST_FILE: "NO"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: "YES"
+    dependencies:
+      - target: KeyboardExtension
+
+  KeyboardExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: KeyboardExtension
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.redmal.aitranslate.keyboard
+        INFOPLIST_FILE: KeyboardExtension/Info.plist
+        CODE_SIGN_ENTITLEMENTS: KeyboardExtension/KeyboardExtension.entitlements
+        GENERATE_INFOPLIST_FILE: "NO"
+        ENABLE_PREVIEWS: "YES"
