@@ -44,7 +44,7 @@ final class KeyboardViewController: UIInputViewController {
 
     private func wireModel() {
         model.needsNextKeyboardButton = needsInputModeSwitchKey
-        model.advanceKeyboard = { [weak self] in self?.advanceToNextInputKeyboard() }
+        model.advanceKeyboard = { [weak self] in self?.advanceToNextInputMode() }
         model.hasFullAccess = { [weak self] in self?.hasFullAccess ?? false }
         model.readClipboard = { UIPasteboard.general.string }   // only called on explicit tap
         model.insert = { [weak self] text in self?.textDocumentProxy.insertText(text) }
