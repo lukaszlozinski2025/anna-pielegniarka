@@ -19,127 +19,137 @@ struct KeyboardView: View {
     private var pal: KBPalette { KBPalette.forScheme(scheme) }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 5) {
+            // The strip is transparent (no grey bar) — the two glass CTA circles
+            // float over the host app above the keyboard body.
             topStrip
-            Rectangle().fill(pal.hairline).frame(height: 0.5)
-
-            Group {
-                if model.expanded {
-                    optionsCard
-                } else if model.showKeyboard {
-                    VStack(spacing: 6) {
-                        inputBox
-                        if let status = model.status {
-                            Text(status)
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundStyle(pal.dim)
-                                .lineLimit(2)
-                        }
-                        QwertyKeyboardView(model: model, pal: pal)
-                    }
-                    .overlay(alignment: .topTrailing) {
-                        if model.showLangBadge, let f = model.detectedForeign {
-                            Text("\(f.flag) \(f.badge) wykryto")
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(pal.keyText)
-                                .padding(.horizontal, 10).padding(.vertical, 5)
-                                .background(pal.key.opacity(0.55))
-                                .clipShape(Capsule())
-                                .offset(y: -13)
-                                .transition(.opacity)
-                        }
-                    }
-                    .animation(.easeInOut(duration: 0.25), value: model.showLangBadge)
-                } else {
-                    resultCard
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-            }
-            .padding(.horizontal, 6)
-            .padding(.top, 6)
-            .padding(.bottom, 6)
+            contentArea
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear { tilt.start() }
+        .onDisappear { tilt.stop() }
+    }
+
+    /// The grey keyboard body: options / typing / result. The neon flag rim and
+    /// the solid ground live here (not on the transparent strip above).
+    private var contentArea: some View {
+        Group {
+            if model.expanded {
+                optionsCard
+            } else if model.showKeyboard {
+                typingArea
+            } else {
+                resultCard
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        .padding(.horizontal, 6)
+        .padding(.top, 8)
+        .padding(.bottom, 6)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(pal.bg)
         // Neon "flag rim": the panel looks laid on top of the target language's
         // flag, only the horizontal bands peeking at the edges (PL = white/red).
         .neonFlagRim(for: model.outputLang)
-        .onAppear { tilt.start() }
-        .onDisappear { tilt.stop() }
+    }
+
+    private var typingArea: some View {
+        VStack(spacing: 6) {
+            inputBox
+            if let status = model.status {
+                Text(status)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(pal.dim)
+                    .lineLimit(2)
+            }
+            QwertyKeyboardView(model: model, pal: pal)
+        }
+        .overlay(alignment: .topTrailing) {
+            if model.showLangBadge, let f = model.detectedForeign {
+                Text("\(f.flag) \(f.badge) wykryto")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(pal.keyText)
+                    .padding(.horizontal, 10).padding(.vertical, 5)
+                    .background(pal.key.opacity(0.55))
+                    .clipShape(Capsule())
+                    .offset(y: -13)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: model.showLangBadge)
     }
 
     // MARK: - Top strip
     //
-    // A transparent strip (no solid bar) with two circular, ~50%-frosted CTA
-    // buttons "punched" into it: options (hamburger) on the left, the keyboard
-    // show/hide toggle on the right. The mandatory next-keyboard globe tucks in
-    // beside the hamburger only when the system requires it.
+    // Transparent (no grey bar): just two big glass circular CTAs floating over
+    // the host — options (hamburger) on the left, the keyboard show/hide toggle
+    // on the right. The mandatory next-keyboard globe lives in the QWERTY's
+    // bottom row, so it isn't duplicated here.
 
     private var topStrip: some View {
         HStack(spacing: 8) {
             circleControl(
-                icon: model.expanded ? "chevron.down" : "slider.horizontal.3",
-                tint: pal.dim,
-                fill: pal.key.opacity(0.5),
-                glow: false,
+                icon: model.expanded ? "xmark" : "slider.horizontal.3",
+                iconTint: model.expanded ? pal.accent : pal.keyText,
+                glow: model.expanded,
                 action: model.toggleExpand
             )
             .accessibilityLabel("Więcej opcji")
 
-            if model.needsNextKeyboardButton {
-                circleControl(
-                    icon: "globe",
-                    tint: pal.dim,
-                    fill: pal.key.opacity(0.5),
-                    glow: false,
-                    action: model.advanceKeyboard
-                )
-                .accessibilityLabel("Następna klawiatura")
-            }
-
             Spacer()
-            if model.busy { ProgressView().scaleEffect(0.7).tint(pal.accent) }
+            if model.busy { ProgressView().tint(pal.accent) }
             keyboardToggleButton
         }
-        .padding(.horizontal, 8)
-        .frame(height: 40)
+        .padding(.horizontal, 12)
+        .frame(height: 54)
     }
 
-    /// Chowa klawiaturę / wysuwa ją z powrotem — patrz `KeyboardViewModel.collapseKeyboard()`
-    /// i `.expandKeyboard()`. Same "keyboard" glyph both ways; only the highlight
-    /// changes — a muted frosted circle while the QWERTY is showing, a soft green
-    /// glow once collapsed (there's a translation waiting behind it).
+    /// Chowa klawiaturę / wysuwa ją z powrotem. Always enabled: collapsing with
+    /// no translation yet still works and reveals the result area's placeholder,
+    /// so a tap never feels dead. Green glow once collapsed (a translation is on
+    /// screen behind the keyboard).
     private var keyboardToggleButton: some View {
         let collapsed = !model.showKeyboard
-        let disabled = model.showKeyboard && model.output.isEmpty
         return circleControl(
-            icon: "keyboard",
-            tint: collapsed ? pal.accent : pal.dim.opacity(disabled ? 0.4 : 0.9),
-            fill: collapsed ? pal.accent.opacity(0.5) : pal.key.opacity(0.5),
+            icon: "keyboard.chevron.compact.down",
+            iconTint: collapsed ? pal.accent : pal.keyText,
             glow: collapsed,
             action: { if model.showKeyboard { model.collapseKeyboard() } else { model.expandKeyboard() } }
         )
-        .disabled(disabled)
         .accessibilityLabel(collapsed ? "Wysuń klawiaturę" : "Schowaj klawiaturę, pokaż tłumaczenie")
     }
 
-    /// A round, semi-transparent control button — the frosted "cut-out" look for
-    /// the top strip, with a specular glint that tracks the phone's tilt via the
-    /// gyroscope (the latest-iOS "liquid glass" highlight).
-    private func circleControl(icon: String, tint: Color, fill: Color, glow: Bool,
+    /// A big round glass control — frosted `thinMaterial` disc, a lit glass edge,
+    /// a soft shadow, a specular glint that tracks the phone's tilt (gyroscope),
+    /// a spring press animation and a key-click on tap. The latest-iOS
+    /// "liquid glass" button, ~35% larger than a standard bar icon and ~70%
+    /// see-through.
+    private func circleControl(icon: String, iconTint: Color, glow: Bool,
                                action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(tint)
-                .frame(width: 36, height: 36)
-                .background(fill)
-                .overlay(TiltGlint(motion: tilt))          // gyroscope shine
-                .clipShape(Circle())
-                .overlay(Circle().stroke(pal.hairline, lineWidth: 0.5))
-                .shadow(color: glow ? pal.accent.opacity(0.4) : .clear, radius: 5)
+        Button {
+            model.playClickSound()
+            action()
+        } label: {
+            ZStack {
+                Circle().fill(.thinMaterial)                 // frosted glass (~70% see-through)
+                Circle().fill(glow ? pal.accent.opacity(0.16) : Color.white.opacity(0.08))
+                TiltGlint(motion: tilt)                      // gyroscope shine
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(iconTint)
+            }
+            .frame(width: 48, height: 48)
+            .clipShape(Circle())
+            .overlay(
+                Circle().stroke(
+                    LinearGradient(colors: [.white.opacity(0.65), .white.opacity(0.05)],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing),
+                    lineWidth: 0.9)
+            )
+            .shadow(color: glow ? pal.accent.opacity(0.45) : .black.opacity(0.14),
+                    radius: glow ? 8 : 4, x: 0, y: 2)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableCircleStyle())
     }
 
     // MARK: - Typing mode (big input box above the QWERTY)
@@ -151,16 +161,20 @@ struct KeyboardView: View {
     /// no system-keyboard-editable field here, so this is display-only.
     private var inputBox: some View {
         ScrollView {
-            HStack(alignment: .top, spacing: 3) {
+            // Text sizes to its content (no maxWidth), so the caret sits right
+            // after the last character; the trailing Spacer pushes the whole line
+            // to the left. Long text still wraps and grows downward.
+            HStack(alignment: .top, spacing: 2) {
                 Text(model.input.isEmpty ? "Pisz wiadomość…" : model.input)
                     .font(.system(size: 17))
                     .foregroundStyle(model.input.isEmpty ? pal.dim : pal.fieldText)
-                    .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
                 if !model.input.isEmpty {
                     BlinkingCursor(color: pal.fieldText)
                 }
+                Spacer(minLength: 0)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.trailing, 22)
         }
         .frame(height: 56)
@@ -191,31 +205,43 @@ struct KeyboardView: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(pal.dim)
                 Spacer()
-                Button(action: model.copyResult) {
-                    Label("Kopiuj", systemImage: "doc.on.doc.fill")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(pal.keyText)
-                        .padding(.horizontal, 14).padding(.vertical, 8)
-                        .background(pal.bg)
-                        .clipShape(Capsule())
+                if !model.output.isEmpty {
+                    Button(action: model.copyResult) {
+                        Label("Kopiuj", systemImage: "doc.on.doc.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(pal.keyText)
+                            .padding(.horizontal, 14).padding(.vertical, 8)
+                            .background(pal.bg)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(PressableStyle())
+                    Button(action: model.insertResult) {
+                        Label("Wstaw", systemImage: "paperplane.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 14).padding(.vertical, 8)
+                            .background(pal.accent)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(PressableStyle())
                 }
-                .buttonStyle(.plain)
-                Button(action: model.insertResult) {
-                    Label("Wstaw", systemImage: "paperplane.fill")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 14).padding(.vertical, 8)
-                        .background(pal.accent)
-                        .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
             }
-            ScrollView {
-                Text(model.output)
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(pal.translated)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .textSelection(.enabled)
+            if model.output.isEmpty {
+                Spacer()
+                Text("Tu pojawi się tłumaczenie.\nNapisz wiadomość i dotknij ➜ albo wklej tekst — potem schowaj klawiaturę.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(pal.dim)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                Spacer()
+            } else {
+                ScrollView {
+                    Text(model.output)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(pal.translated)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                }
             }
             if let status = model.status {
                 Text(status)
@@ -336,6 +362,49 @@ struct KBPalette {
             translated: Color(hex: 0x007AFF)
         )
     }
+}
+
+// MARK: - Press feedback
+
+/// Bouncy scale-down on press for the round glass CTAs.
+struct PressableCircleStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.86 : 1)
+            .brightness(configuration.isPressed ? 0.06 : 0)
+            .animation(.spring(response: 0.28, dampingFraction: 0.55), value: configuration.isPressed)
+    }
+}
+
+/// A gentler scale-down for pill buttons (Kopiuj / Wstaw / API key).
+struct PressableStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.94 : 1)
+            .opacity(configuration.isPressed ? 0.9 : 1)
+            .animation(.spring(response: 0.25, dampingFraction: 0.6), value: configuration.isPressed)
+    }
+}
+
+/// A subtle press scale for the QWERTY keys, which are gesture-driven (not
+/// Buttons, so they can keep tap-vs-long-press arbitration for diacritics). A
+/// zero-distance drag runs *simultaneously* — it only tracks the press for the
+/// scale and never swallows the tap or the long-press.
+struct KeyPressScale: ViewModifier {
+    @GestureState private var pressed = false
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(pressed ? 0.9 : 1)
+            .animation(.easeOut(duration: 0.11), value: pressed)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .updating($pressed) { _, state, _ in state = true }
+            )
+    }
+}
+
+extension View {
+    func keyPressScale() -> some View { modifier(KeyPressScale()) }
 }
 
 /// A simple caret that blinks like the system text cursor, placed after the

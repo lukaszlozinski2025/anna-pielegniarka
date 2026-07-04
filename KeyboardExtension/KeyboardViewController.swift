@@ -11,9 +11,10 @@ final class KeyboardViewController: UIInputViewController {
     private var heightConstraint: NSLayoutConstraint!
     private var clipboardPollTimer: Timer?
 
-    /// Match the standard iOS keyboard footprint so we occupy the same space as
-    /// the WhatsApp keyboard instead of a small floating panel.
-    private let keyboardHeight: CGFloat = 320
+    /// A touch taller than the stock keyboard: the top ~54pt strip is transparent
+    /// (the glass CTA circles float over the host there), so we add that back to
+    /// keep the actual key area at a comfortable, standard-feeling height.
+    private let keyboardHeight: CGFloat = 356
 
     override func viewDidLoad() {
         super.viewDidLoad()

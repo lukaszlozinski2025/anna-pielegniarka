@@ -59,12 +59,12 @@ struct TiltGlint: View {
                 Circle()
                     .strokeBorder(tint.opacity(0.5), lineWidth: 1)
                     .frame(width: d, height: d)
-                    .mask(
+                    .mask {
                         LinearGradient(
                             colors: [tint, .clear],
                             startPoint: UnitPoint(x: 0.5 + motion.roll * 0.5, y: 0.5 + motion.pitch * 0.5),
                             endPoint: UnitPoint(x: 0.5 - motion.roll * 0.5, y: 0.5 - motion.pitch * 0.5))
-                    )
+                    }
             }
             .frame(width: d, height: d)
             .blendMode(.plusLighter)

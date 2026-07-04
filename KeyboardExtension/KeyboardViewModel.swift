@@ -258,18 +258,15 @@ final class KeyboardViewModel: ObservableObject {
 
     // MARK: - Show/hide the QWERTY
 
-    /// Chevron tap while typing: hide the keyboard, reveal the (already
-    /// translated) result underneath.
+    /// Hide the keyboard to reveal the result area underneath. Works even with no
+    /// translation yet (the result area shows a placeholder), so the toggle never
+    /// feels dead.
     func collapseKeyboard() { showKeyboard = false }
 
-    /// Chevron tap while viewing a result: bring the QWERTY back for the next
-    /// message. The old draft is done with, so clear it — the translation
-    /// itself stays put until overwritten by the next `translate()`.
-    func expandKeyboard() {
-        input = ""
-        inputSource = .none
-        showKeyboard = true
-    }
+    /// Bring the QWERTY back. Non-destructive: whatever was typed stays, so a
+    /// quick peek-and-return doesn't lose the draft. Use `clearAll()` (Wyczyść
+    /// tekst) to start fresh.
+    func expandKeyboard() { showKeyboard = true }
 
     // MARK: - Own QWERTY (typing directly into the keyboard)
 

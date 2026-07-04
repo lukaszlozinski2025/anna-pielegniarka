@@ -49,12 +49,24 @@ struct QwertyKeyboardView: View {
                 utilityKey(icon: "delete.left.fill", width: 38) { model.backspace() }
             }
             HStack(spacing: 6) {
-                textKey(symbolsPage ? "ABC" : "123", width: 44) {
+                textKey(symbolsPage ? "ABC" : "123", width: 40) {
                     symbolsPage.toggle()
                     model.playClickSound()
                 }
+                // Mandatory next-keyboard button (lets you switch back to the
+                // system keyboard). Lives here since the top strip is just the
+                // two glass CTAs now.
+                if model.needsNextKeyboardButton {
+                    utilityKey(icon: "globe", width: 34) {
+                        model.playClickSound()
+                        model.advanceKeyboard()
+                    }
+                }
                 spaceKey
-                utilityKey(icon: "arrow.down.doc.fill", width: 38) { model.loadFromWhatsApp() }
+                utilityKey(icon: "arrow.down.doc.fill", width: 38) {
+                    model.playClickSound()
+                    model.loadFromWhatsApp()
+                }
                 pasteKey
                 translateKey
             }
@@ -91,6 +103,7 @@ struct QwertyKeyboardView: View {
                 .onLongPressGesture(minimumDuration: 0.35) {
                     if let opts = options { diacritic = (base, opts) }
                 }
+                .keyPressScale()
 
             if let d = diacritic, d.key == base {
                 HStack(spacing: 4) {
@@ -132,6 +145,7 @@ struct QwertyKeyboardView: View {
             .shadow(color: .black.opacity(0.22), radius: 0, x: 0, y: 1)
             .contentShape(Rectangle())
             .onTapGesture(perform: action)
+            .keyPressScale()
     }
 
     private func textKey(_ title: String, width: CGFloat, action: @escaping () -> Void) -> some View {
@@ -144,6 +158,7 @@ struct QwertyKeyboardView: View {
             .shadow(color: .black.opacity(0.22), radius: 0, x: 0, y: 1)
             .contentShape(Rectangle())
             .onTapGesture(perform: action)
+            .keyPressScale()
     }
 
     private var spaceKey: some View {
@@ -157,6 +172,7 @@ struct QwertyKeyboardView: View {
             .shadow(color: .black.opacity(0.22), radius: 0, x: 0, y: 1)
             .contentShape(Rectangle())
             .onTapGesture { model.typeCharacter(" ") }
+            .keyPressScale()
     }
 
     private var pasteKey: some View {
@@ -167,7 +183,11 @@ struct QwertyKeyboardView: View {
             .background(pal.accent)
             .clipShape(RoundedRectangle(cornerRadius: 6))
             .contentShape(Rectangle())
-            .onTapGesture { model.pasteFromClipboard() }
+            .onTapGesture {
+                model.playClickSound()
+                model.pasteFromClipboard()
+            }
+            .keyPressScale()
     }
 
     private var translateKey: some View {
@@ -178,6 +198,10 @@ struct QwertyKeyboardView: View {
             .background(pal.accent)
             .clipShape(RoundedRectangle(cornerRadius: 6))
             .contentShape(Rectangle())
-            .onTapGesture { model.translate() }
+            .onTapGesture {
+                model.playClickSound()
+                model.translate()
+            }
+            .keyPressScale()
     }
 }
