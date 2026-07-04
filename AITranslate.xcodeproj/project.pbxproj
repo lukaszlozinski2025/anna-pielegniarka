@@ -1,0 +1,484 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1A2B3C4D5E6F708090A00200 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00100 /* AppGroup.swift */; };
+		1A2B3C4D5E6F708090A00201 /* AppGroupSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00101 /* AppGroupSettings.swift */; };
+		1A2B3C4D5E6F708090A00202 /* TranslationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00102 /* TranslationModels.swift */; };
+		1A2B3C4D5E6F708090A00203 /* TranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00103 /* TranslationService.swift */; };
+		1A2B3C4D5E6F708090A00204 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00104 /* Theme.swift */; };
+		1A2B3C4D5E6F708090A00210 /* AITranslateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00110 /* AITranslateApp.swift */; };
+		1A2B3C4D5E6F708090A00211 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00111 /* RootView.swift */; };
+		1A2B3C4D5E6F708090A00212 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00112 /* OnboardingView.swift */; };
+		1A2B3C4D5E6F708090A00213 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00113 /* SettingsView.swift */; };
+		1A2B3C4D5E6F708090A00214 /* TestTranslateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00114 /* TestTranslateView.swift */; };
+		1A2B3C4D5E6F708090A00215 /* PrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00115 /* PrivacyView.swift */; };
+		1A2B3C4D5E6F708090A00216 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00116 /* HistoryView.swift */; };
+		1A2B3C4D5E6F708090A00217 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00117 /* Assets.xcassets */; };
+		1A2B3C4D5E6F708090A00220 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00100 /* AppGroup.swift */; };
+		1A2B3C4D5E6F708090A00221 /* AppGroupSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00101 /* AppGroupSettings.swift */; };
+		1A2B3C4D5E6F708090A00222 /* TranslationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00102 /* TranslationModels.swift */; };
+		1A2B3C4D5E6F708090A00223 /* TranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00103 /* TranslationService.swift */; };
+		1A2B3C4D5E6F708090A00224 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00104 /* Theme.swift */; };
+		1A2B3C4D5E6F708090A00230 /* KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00120 /* KeyboardViewController.swift */; };
+		1A2B3C4D5E6F708090A00231 /* KeyboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00121 /* KeyboardViewModel.swift */; };
+		1A2B3C4D5E6F708090A00232 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00122 /* KeyboardView.swift */; };
+		1A2B3C4D5E6F708090A00233 /* QwertyKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00125 /* QwertyKeyboardView.swift */; };
+		1A2B3C4D5E6F708090A00234 /* NeonFlagBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00126 /* NeonFlagBorder.swift */; };
+		1A2B3C4D5E6F708090A00235 /* TiltMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00127 /* TiltMotion.swift */; };
+		1A2B3C4D5E6F708090A00240 /* KeyboardExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00061 /* KeyboardExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1A2B3C4D5E6F708090A00051 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1A2B3C4D5E6F708090A00001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1A2B3C4D5E6F708090A00011;
+			remoteInfo = KeyboardExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1A2B3C4D5E6F708090A00043 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				1A2B3C4D5E6F708090A00240 /* KeyboardExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		1A2B3C4D5E6F708090A00060 /* AITranslate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AITranslate.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A2B3C4D5E6F708090A00061 /* KeyboardExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KeyboardExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A2B3C4D5E6F708090A00100 /* AppGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroup.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00101 /* AppGroupSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroupSettings.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00102 /* TranslationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationModels.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00103 /* TranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationService.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00104 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00110 /* AITranslateApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AITranslateApp.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00111 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00112 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00113 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00114 /* TestTranslateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTranslateView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00115 /* PrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00116 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00117 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00118 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00119 /* AITranslate.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AITranslate.entitlements; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00120 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00121 /* KeyboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewModel.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00122 /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00125 /* QwertyKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QwertyKeyboardView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00126 /* NeonFlagBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeonFlagBorder.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00127 /* TiltMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TiltMotion.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00123 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00124 /* KeyboardExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyboardExtension.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1A2B3C4D5E6F708090A00041 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A2B3C4D5E6F708090A00045 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1A2B3C4D5E6F708090A00002 = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F708090A00004 /* Shared */,
+				1A2B3C4D5E6F708090A00005 /* AITranslate */,
+				1A2B3C4D5E6F708090A00006 /* KeyboardExtension */,
+				1A2B3C4D5E6F708090A00003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F708090A00003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F708090A00060 /* AITranslate.app */,
+				1A2B3C4D5E6F708090A00061 /* KeyboardExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F708090A00004 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F708090A00100 /* AppGroup.swift */,
+				1A2B3C4D5E6F708090A00101 /* AppGroupSettings.swift */,
+				1A2B3C4D5E6F708090A00102 /* TranslationModels.swift */,
+				1A2B3C4D5E6F708090A00103 /* TranslationService.swift */,
+				1A2B3C4D5E6F708090A00104 /* Theme.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F708090A00005 /* AITranslate */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F708090A00110 /* AITranslateApp.swift */,
+				1A2B3C4D5E6F708090A00111 /* RootView.swift */,
+				1A2B3C4D5E6F708090A00112 /* OnboardingView.swift */,
+				1A2B3C4D5E6F708090A00113 /* SettingsView.swift */,
+				1A2B3C4D5E6F708090A00114 /* TestTranslateView.swift */,
+				1A2B3C4D5E6F708090A00115 /* PrivacyView.swift */,
+				1A2B3C4D5E6F708090A00116 /* HistoryView.swift */,
+				1A2B3C4D5E6F708090A00117 /* Assets.xcassets */,
+				1A2B3C4D5E6F708090A00118 /* Info.plist */,
+				1A2B3C4D5E6F708090A00119 /* AITranslate.entitlements */,
+			);
+			path = AITranslate;
+			sourceTree = "<group>";
+		};
+		1A2B3C4D5E6F708090A00006 /* KeyboardExtension */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F708090A00120 /* KeyboardViewController.swift */,
+				1A2B3C4D5E6F708090A00121 /* KeyboardViewModel.swift */,
+				1A2B3C4D5E6F708090A00122 /* KeyboardView.swift */,
+				1A2B3C4D5E6F708090A00125 /* QwertyKeyboardView.swift */,
+				1A2B3C4D5E6F708090A00126 /* NeonFlagBorder.swift */,
+				1A2B3C4D5E6F708090A00127 /* TiltMotion.swift */,
+				1A2B3C4D5E6F708090A00123 /* Info.plist */,
+				1A2B3C4D5E6F708090A00124 /* KeyboardExtension.entitlements */,
+			);
+			path = KeyboardExtension;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1A2B3C4D5E6F708090A00010 /* AITranslate */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A2B3C4D5E6F708090A00021 /* Build configuration list for PBXNativeTarget "AITranslate" */;
+			buildPhases = (
+				1A2B3C4D5E6F708090A00040 /* Sources */,
+				1A2B3C4D5E6F708090A00041 /* Frameworks */,
+				1A2B3C4D5E6F708090A00042 /* Resources */,
+				1A2B3C4D5E6F708090A00043 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1A2B3C4D5E6F708090A00050 /* PBXTargetDependency */,
+			);
+			name = AITranslate;
+			productName = AITranslate;
+			productReference = 1A2B3C4D5E6F708090A00060 /* AITranslate.app */;
+			productType = "com.apple.product-type.application";
+		};
+		1A2B3C4D5E6F708090A00011 /* KeyboardExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A2B3C4D5E6F708090A00022 /* Build configuration list for PBXNativeTarget "KeyboardExtension" */;
+			buildPhases = (
+				1A2B3C4D5E6F708090A00044 /* Sources */,
+				1A2B3C4D5E6F708090A00045 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KeyboardExtension;
+			productName = KeyboardExtension;
+			productReference = 1A2B3C4D5E6F708090A00061 /* KeyboardExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1A2B3C4D5E6F708090A00001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					1A2B3C4D5E6F708090A00010 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+					1A2B3C4D5E6F708090A00011 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+				};
+			};
+			buildConfigurationList = 1A2B3C4D5E6F708090A00020 /* Build configuration list for PBXProject "AITranslate" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 1A2B3C4D5E6F708090A00002;
+			productRefGroup = 1A2B3C4D5E6F708090A00003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1A2B3C4D5E6F708090A00010 /* AITranslate */,
+				1A2B3C4D5E6F708090A00011 /* KeyboardExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1A2B3C4D5E6F708090A00042 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A2B3C4D5E6F708090A00217 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1A2B3C4D5E6F708090A00040 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A2B3C4D5E6F708090A00210 /* AITranslateApp.swift in Sources */,
+				1A2B3C4D5E6F708090A00211 /* RootView.swift in Sources */,
+				1A2B3C4D5E6F708090A00212 /* OnboardingView.swift in Sources */,
+				1A2B3C4D5E6F708090A00213 /* SettingsView.swift in Sources */,
+				1A2B3C4D5E6F708090A00214 /* TestTranslateView.swift in Sources */,
+				1A2B3C4D5E6F708090A00215 /* PrivacyView.swift in Sources */,
+				1A2B3C4D5E6F708090A00216 /* HistoryView.swift in Sources */,
+				1A2B3C4D5E6F708090A00200 /* AppGroup.swift in Sources */,
+				1A2B3C4D5E6F708090A00201 /* AppGroupSettings.swift in Sources */,
+				1A2B3C4D5E6F708090A00202 /* TranslationModels.swift in Sources */,
+				1A2B3C4D5E6F708090A00203 /* TranslationService.swift in Sources */,
+				1A2B3C4D5E6F708090A00204 /* Theme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1A2B3C4D5E6F708090A00044 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A2B3C4D5E6F708090A00230 /* KeyboardViewController.swift in Sources */,
+				1A2B3C4D5E6F708090A00231 /* KeyboardViewModel.swift in Sources */,
+				1A2B3C4D5E6F708090A00232 /* KeyboardView.swift in Sources */,
+				1A2B3C4D5E6F708090A00233 /* QwertyKeyboardView.swift in Sources */,
+				1A2B3C4D5E6F708090A00234 /* NeonFlagBorder.swift in Sources */,
+				1A2B3C4D5E6F708090A00235 /* TiltMotion.swift in Sources */,
+				1A2B3C4D5E6F708090A00220 /* AppGroup.swift in Sources */,
+				1A2B3C4D5E6F708090A00221 /* AppGroupSettings.swift in Sources */,
+				1A2B3C4D5E6F708090A00222 /* TranslationModels.swift in Sources */,
+				1A2B3C4D5E6F708090A00223 /* TranslationService.swift in Sources */,
+				1A2B3C4D5E6F708090A00224 /* Theme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1A2B3C4D5E6F708090A00050 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1A2B3C4D5E6F708090A00011 /* KeyboardExtension */;
+			targetProxy = 1A2B3C4D5E6F708090A00051 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1A2B3C4D5E6F708090A00030 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		1A2B3C4D5E6F708090A00031 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		1A2B3C4D5E6F708090A00032 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AITranslate/AITranslate.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AITranslate/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.redmal.aitranslate;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		1A2B3C4D5E6F708090A00033 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AITranslate/AITranslate.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AITranslate/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.redmal.aitranslate;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		1A2B3C4D5E6F708090A00034 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = KeyboardExtension/KeyboardExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = KeyboardExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.redmal.aitranslate.keyboard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		1A2B3C4D5E6F708090A00035 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = KeyboardExtension/KeyboardExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = KeyboardExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.redmal.aitranslate.keyboard;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1A2B3C4D5E6F708090A00020 /* Build configuration list for PBXProject "AITranslate" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A2B3C4D5E6F708090A00030 /* Debug */,
+				1A2B3C4D5E6F708090A00031 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A2B3C4D5E6F708090A00021 /* Build configuration list for PBXNativeTarget "AITranslate" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A2B3C4D5E6F708090A00032 /* Debug */,
+				1A2B3C4D5E6F708090A00033 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A2B3C4D5E6F708090A00022 /* Build configuration list for PBXNativeTarget "KeyboardExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A2B3C4D5E6F708090A00034 /* Debug */,
+				1A2B3C4D5E6F708090A00035 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1A2B3C4D5E6F708090A00001 /* Project object */;
+}
