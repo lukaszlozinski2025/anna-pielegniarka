@@ -157,12 +157,40 @@ struct KeyboardView: View {
                     .tint(pal.accent)
                     .foregroundStyle(pal.fieldText)
             }
+            Divider()
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Klucz Anthropic API").font(.system(size: 11, weight: .semibold)).foregroundStyle(pal.dim)
+                if model.hasAPIKey {
+                    HStack {
+                        Label("Zapisany", systemImage: "checkmark.seal.fill")
+                            .font(.system(size: 13, weight: .semibold)).foregroundStyle(pal.accent)
+                        Spacer()
+                        Button("Usuń", role: .destructive, action: model.clearAPIKey)
+                            .font(.system(size: 13)).tint(pal.danger)
+                    }
+                } else {
+                    Button(action: model.pasteAPIKey) {
+                        Label("Wklej klucz ze schowka", systemImage: "key.fill")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(pal.accentText)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .background(pal.accent)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+                    .buttonStyle(.plain)
+                    Text("Skopiuj swój klucz sk-ant-… i dotknij powyżej. Wymaga włączonego Pełnego dostępu.")
+                        .font(.system(size: 11)).foregroundStyle(pal.dim)
+                }
+            }
+
             HStack {
                 Text("Model: \(model.settings.model.badge)")
                     .font(.system(size: 13)).foregroundStyle(pal.dim)
                 Spacer()
-                Button("Wyczyść", role: .destructive, action: model.clearAll)
-                    .font(.system(size: 14, weight: .semibold))
+                Button("Wyczyść tekst", role: .destructive, action: model.clearAll)
+                    .font(.system(size: 13))
                     .tint(pal.danger)
             }
             Spacer()

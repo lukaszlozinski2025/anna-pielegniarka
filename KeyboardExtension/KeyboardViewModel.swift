@@ -153,6 +153,27 @@ final class KeyboardViewModel: ObservableObject {
         input = ""; output = ""; outputLang = .unknown; status = nil
     }
 
+    // MARK: - API key (entered here because a free Apple ID can't share it via App Group)
+
+    var hasAPIKey: Bool { !settings.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    /// Save the API key from the clipboard (copy your sk-ant-… key, then tap this).
+    func pasteAPIKey() {
+        guard settings.useMockService || hasFullAccess() else {
+            status = TranslationError.noFullAccess.errorDescription; return
+        }
+        guard let key = readClipboard()?.trimmingCharacters(in: .whitespacesAndNewlines), !key.isEmpty else {
+            status = "Najpierw skopiuj swój klucz API"; return
+        }
+        settings.apiKey = key
+        status = "Klucz API zapisany ✓"
+    }
+
+    func clearAPIKey() {
+        settings.apiKey = ""
+        status = "Klucz API usunięty"
+    }
+
     private func record(source: String, result: String) {
         let dir: TranslationDirection = (outputLang.code == "pl") ? .enToPl : .plToEn
         settings.addToHistory(TranslationRecord(source: source, result: result, direction: dir))

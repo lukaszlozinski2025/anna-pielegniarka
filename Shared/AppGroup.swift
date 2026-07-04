@@ -1,14 +1,17 @@
 import Foundation
 
-/// Central place for identifiers shared between the main app and the keyboard
-/// extension. If you change the bundle identifiers or the App Group, update
-/// them here AND in the target settings / entitlements files.
+/// Identifiers shared between the main app and the keyboard extension.
+///
+/// NOTE: App Groups require a paid Apple Developer Program membership. To let
+/// the app run on a **free** Apple ID (Personal Team), we do NOT use an App
+/// Group container — each process (app / keyboard) keeps its own
+/// `UserDefaults.standard`, and the keyboard gets its own API key (pasted into
+/// the keyboard's options). When you move to a paid account you can re-add the
+/// App Group capability on both targets and switch `defaults` back to
+/// `UserDefaults(suiteName: identifier)` to share settings again.
 enum AppGroup {
-    /// Must match the App Group capability enabled on BOTH targets.
     static let identifier = "group.com.redmal.aitranslate"
 
-    /// Shared UserDefaults suite backed by the App Group container.
-    static var defaults: UserDefaults {
-        UserDefaults(suiteName: identifier) ?? .standard
-    }
+    /// Per-process defaults (no App Group needed → works on a free Apple ID).
+    static var defaults: UserDefaults { .standard }
 }

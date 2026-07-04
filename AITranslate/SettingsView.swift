@@ -17,7 +17,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Klucz API")
                 } footer: {
-                    Text("Klucz jest zapisywany lokalnie (App Group) i wysyłany tylko do Anthropic API. Jeśli podasz własny Backend URL, zapytania pójdą tam zamiast do api.anthropic.com.")
+                    Text("Klucz jest zapisywany lokalnie i wysyłany tylko do Anthropic API. Uwaga: na darmowym koncie Apple klawiatura ma osobny klucz — wpisz/​wklej go też w samej klawiaturze (opcje „⚙”). Ten klucz tutaj działa dla ekranu Test.")
                 }
 
                 Section("Model") {
