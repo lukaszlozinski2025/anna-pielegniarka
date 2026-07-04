@@ -16,6 +16,7 @@ struct KeyboardView: View {
 
             VStack(spacing: 8) {
                 inputField
+                whatsAppReadButton
                 mainArea
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 keysRow
@@ -69,14 +70,37 @@ struct KeyboardView: View {
     // MARK: - Input field
 
     private var inputField: some View {
-        TextField("Wpisz lub wklej tekst…", text: $model.input, axis: .vertical)
+        // Note: this field fills via paste / "Odbierz z WhatsApp" only — a
+        // keyboard extension can't show its own letter keys for typing into it,
+        // so there's no on-screen way to type here directly. The placeholder
+        // reflects that.
+        TextField("Wklejony lub odebrany tekst…", text: $model.input, axis: .vertical)
             .lineLimit(1...2)
+            .disabled(true)
             .font(.system(size: 16))
             .foregroundStyle(pal.fieldText)
             .padding(.horizontal, 12).padding(.vertical, 9)
             .background(pal.field)
             .clipShape(RoundedRectangle(cornerRadius: 9))
             .overlay(RoundedRectangle(cornerRadius: 9).stroke(pal.hairline, lineWidth: 0.5))
+    }
+
+    /// Reads whatever is currently typed/dictated in WhatsApp's own field. This is
+    /// how replies get composed: switch to the system keyboard (globe) to type or
+    /// dictate your Polish reply directly into WhatsApp, switch back here, tap
+    /// this — it cleans up the draft, translates it, and swaps it into the field.
+    private var whatsAppReadButton: some View {
+        Button(action: model.loadFromWhatsApp) {
+            Label("Odbierz z WhatsApp (pisz lub dyktuj tam)", systemImage: "arrow.down.doc.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(pal.dim)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 7)
+                .background(pal.field)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(pal.hairline, lineWidth: 0.5))
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Main area (result card / options), fills the height
@@ -108,7 +132,7 @@ struct KeyboardView: View {
             }
             if model.output.isEmpty {
                 Spacer()
-                Text("Wklej wiadomość rozmówcy, żeby zobaczyć ją po polsku — albo wpisz odpowiedź i przetłumacz.")
+                Text("Wklej wiadomość rozmówcy, żeby zobaczyć ją po polsku — albo napisz/podyktuj odpowiedź w WhatsApp i dotknij „Odbierz z WhatsApp”.")
                     .font(.system(size: 13))
                     .foregroundStyle(pal.dim)
                 Spacer()

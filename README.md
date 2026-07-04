@@ -4,15 +4,22 @@ Natywna aplikacja iOS z **własną klawiaturą systemową (Custom Keyboard
 Extension)**, która tłumaczy wiadomości bezpośrednio w WhatsAppie, Messengerze,
 Mailu i innych aplikacjach — przez **Anthropic API (Claude Haiku)**.
 
-Główny scenariusz: kopiujesz wiadomość rozmówcy po angielsku → przełączasz się
-na klawiaturę „AI Translate" → „Wklej ze schowka" → „EN → PL" i czytasz
-tłumaczenie po polsku. Piszesz odpowiedź po polsku w panelu klawiatury →
-„Przetłumacz odpowiedź" → „Wstaw do WhatsApp" wstawia gotowy angielski tekst do
-pola wiadomości. Wysyłasz sam.
+Główny scenariusz: kopiujesz wiadomość rozmówcy w WhatsApp → przełączasz się na
+klawiaturę „AI Translate" → tłumaczenie po polsku pojawia się **od razu** (klawiatura
+wykrywa nowo skopiowany tekst, gdy jest aktywna — bez dodatkowego dotknięcia).
+Odpowiadasz: wracasz globusem 🌐 do zwykłej klawiatury, piszesz albo **dyktujesz**
+(wbudowany mikrofon Apple) odpowiedź po polsku wprost w WhatsAppie → wracasz na
+„AI Translate" → **„Odbierz z WhatsApp"** czyta ten szkic, poprawia go i tłumaczy,
+po czym podmienia w polu wiadomości. Wysyłasz sam.
 
 > Zgodnie z ograniczeniami iOS **nie** ma pływającej nakładki nad WhatsAppem —
 > App Store na to nie pozwala. Zamiast tego działa systemowa klawiatura, którą
 > włączasz raz w Ustawieniach. Nie używamy żadnych prywatnych API Apple.
+>
+> **Dlaczego nie ma mikrofonu w samej klawiaturze:** to twardy sandbox iOS —
+> żadna klawiatura systemowa (nawet Gboard) nie ma dostępu do mikrofonu. Dlatego
+> dyktowanie idzie przez wbudowaną dyktafon-klawiaturę Apple w polu WhatsAppa, a
+> nasza klawiatura tylko odczytuje i poprawia to, co tam wylądowało.
 
 ---
 
@@ -108,12 +115,13 @@ Aplikacja główna ma zakładkę **Start** z tą samą instrukcją krok po kroku
 1. Otwórz **WhatsApp**, wejdź w dowolną rozmowę.
 2. Dotknij pola pisania wiadomości.
 3. Przytrzymaj **globus 🌐** na klawiaturze i wybierz **AI Translate**.
-4. **Odbieranie:** w WhatsApp przytrzymaj wiadomość rozmówcy → *Kopiuj*. Wróć na
-   naszą klawiaturę → **Wklej ze schowka** → **EN → PL** (lub **Auto**). Tłumaczenie
-   po polsku pojawi się w panelu.
-5. **Odpowiadanie:** wpisz odpowiedź po polsku w polu klawiatury →
-   **Przetłumacz odpowiedź** → **Wstaw do WhatsApp**. Gotowy angielski tekst
-   trafi do pola wiadomości. **Wyślij sam.**
+4. **Odbieranie:** w WhatsApp przytrzymaj wiadomość rozmówcy → *Kopiuj*. Przełącz się
+   na naszą klawiaturę (albo, jeśli już jest otwarta, poczekaj chwilę) — tłumaczenie
+   po polsku pojawi się **automatycznie**, bez dodatkowego dotknięcia „Wklej".
+5. **Odpowiadanie:** dotknij globusa, żeby wrócić do zwykłej klawiatury, napisz albo
+   **podyktuj** (mikrofon Apple) odpowiedź po polsku wprost w polu WhatsAppa. Wróć na
+   **AI Translate** → dotknij **„Odbierz z WhatsApp"**. Klawiatura poprawi styl,
+   przetłumaczy i podmieni szkic na gotowy tekst w języku rozmówcy. **Wyślij sam.**
 
 Możesz też przetestować całość bez WhatsAppa — zakładka **Test** w aplikacji
 głównej używa dokładnie tej samej warstwy tłumaczenia.
@@ -156,9 +164,14 @@ metody) i zwróć swoją instancję w `TranslationServiceFactory.make(settings:)
 - błąd API → krótki komunikat z możliwością ponowienia
 
 ### Prywatność
-- Teksty idą do API **tylko** po dotknięciu przycisku tłumaczenia.
-- Schowek czytany **tylko** po „Wklej ze schowka".
-- Klawiatura nie odczytuje całej rozmowy i nie wysyła wiadomości za Ciebie.
+- Teksty idą do API tylko wtedy, gdy klawiatura AI Translate jest aktywna i Ty (lub
+  automatyczne wykrycie skopiowanej wiadomości, działające tylko przy otwartej
+  klawiaturze) inicjujecie tłumaczenie. Nic nie dzieje się, gdy klawiatura jest schowana.
+- Schowek jest sprawdzany tylko wtedy, gdy nasza klawiatura jest widoczna na ekranie.
+- Klawiatura nie odczytuje całej rozmowy z WhatsAppa — tylko to, co skopiujesz, oraz
+  (przez „Odbierz z WhatsApp") aktualny szkic w polu wiadomości.
+- Klawiatura nie ma dostępu do mikrofonu (twarde ograniczenie iOS) — dyktowanie idzie
+  przez systemową klawiaturę Apple wprost w polu WhatsAppa.
 - Historia tłumaczeń **domyślnie wyłączona**; po włączeniu zapisywana tylko lokalnie.
 - Pełne treści wiadomości nie są logowane w konsoli.
 

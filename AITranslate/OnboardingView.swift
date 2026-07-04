@@ -15,8 +15,9 @@ struct OnboardingView: View {
         ("1", "Otwórz WhatsApp i wejdź w dowolną rozmowę."),
         ("2", "Dotknij pola pisania wiadomości."),
         ("3", "Przytrzymaj ikonę globusa 🌐 na klawiaturze i wybierz „AI Translate”."),
-        ("4", "Skopiuj wiadomość rozmówcy, dotknij „Wklej ze schowka”, a potem „EN → PL” lub „Auto”."),
-        ("5", "Wpisz odpowiedź po polsku, dotknij „PL → EN”, a potem „Wstaw do WhatsApp”.")
+        ("4", "Skopiuj wiadomość rozmówcy (przytrzymaj → Kopiuj) — tłumaczenie po polsku pojawi się od razu, bez dodatkowego dotknięcia."),
+        ("5", "Odpowiedź: dotknij globusa, żeby wrócić do zwykłej klawiatury, napisz lub podyktuj odpowiedź po polsku wprost w WhatsAppie."),
+        ("6", "Wróć na „AI Translate” i dotknij „Odbierz z WhatsApp” — przetłumaczony tekst sam podmieni Twój szkic. Wysyłasz sam.")
     ]
 
     var body: some View {

@@ -50,6 +50,10 @@ enum TranslationPrompt {
         let replyTarget = (replyTargetHint?.isEmpty == false) ? replyTargetHint! : "en"
         return """
         Jesteś tłumaczem wbudowanym w klawiaturę do czatu (WhatsApp). Najpierw wykryj język wejścia.
+        Wejście może pochodzić z niedoskonałego dyktowania głosowego (system dictation) albo z szybkiego, \
+        nieuważnego pisania — może mieć brakującą interpunkcję, powtórzenia, urwane słowa albo błędy \
+        gramatyczne. Zanim przetłumaczysz, w myślach zrekonstruuj z niego naturalne, poprawne gramatycznie \
+        zdanie o tym samym sensie — dopiero to przetłumacz.
         - Jeśli wejście jest po polsku: przetłumacz je na język o kodzie "\(replyTarget)", naturalnym, swobodnym tonem czatu (nie jak formalny mail).
         - Jeśli wejście jest w JAKIMKOLWIEK innym języku: przetłumacz je na polski; jeśli są skróty lub slang, dopisz krótko ich znaczenie po polsku.
         Odpowiedz WYŁĄCZNIE poprawnym obiektem JSON, bez markdown, bez komentarzy, dokładnie w formacie:

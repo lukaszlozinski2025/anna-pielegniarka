@@ -9,6 +9,7 @@ final class KeyboardViewController: UIInputViewController {
     private var model: KeyboardViewModel!
     private var hosting: UIHostingController<KeyboardView>!
     private var heightConstraint: NSLayoutConstraint!
+    private var clipboardPollTimer: Timer?
 
     /// Match the standard iOS keyboard footprint so we occupy the same space as
     /// the WhatsApp keyboard instead of a small floating panel.
@@ -42,11 +43,42 @@ final class KeyboardViewController: UIInputViewController {
         heightConstraint.isActive = true
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        checkClipboard()
+        // Light poll while the keyboard is on screen, so copying a new message
+        // mid-session (without switching keyboards) is picked up too. Stops the
+        // moment the keyboard disappears.
+        clipboardPollTimer?.invalidate()
+        clipboardPollTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.checkClipboard()
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        clipboardPollTimer?.invalidate()
+        clipboardPollTimer = nil
+    }
+
+    private func checkClipboard() {
+        guard hasFullAccess else { return }   // reading the pasteboard requires Full Access anyway
+        model.checkClipboardForAutoTranslate(
+            changeCount: UIPasteboard.general.changeCount,
+            contents: UIPasteboard.general.string
+        )
+    }
+
     private func wireModel() {
         model.needsNextKeyboardButton = needsInputModeSwitchKey
         model.advanceKeyboard = { [weak self] in self?.advanceToNextInputMode() }
         model.hasFullAccess = { [weak self] in self?.hasFullAccess ?? false }
-        model.readClipboard = { UIPasteboard.general.string }   // only called on explicit tap
+        model.readClipboard = { UIPasteboard.general.string }
+        model.readHostText = { [weak self] in self?.textDocumentProxy.documentContextBeforeInput }
+        model.clearHostText = { [weak self] in
+            guard let proxy = self?.textDocumentProxy, let text = proxy.documentContextBeforeInput else { return }
+            for _ in text { proxy.deleteBackward() }
+        }
         model.insert = { [weak self] text in self?.textDocumentProxy.insertText(text) }
     }
 }

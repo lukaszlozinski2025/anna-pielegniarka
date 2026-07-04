@@ -24,9 +24,22 @@ final class KeyboardViewModel: ObservableObject {
     let settings: AppGroupSettings
     private let service: TranslationService
 
+    /// Where the current `input` text came from — determines whether translating
+    /// it should clear the WhatsApp field before inserting the result.
+    private enum InputSource { case none, clipboard, whatsapp }
+    private var inputSource: InputSource = .none
+
     // Injected by the controller.
     var hasFullAccess: () -> Bool = { false }
     var readClipboard: () -> String? = { nil }
+    /// Reads the text currently typed/dictated in the host app's field (e.g. the
+    /// WhatsApp compose box). Keyboards can't access the microphone directly, so
+    /// voice input goes through the system keyboard's own dictation into that
+    /// field first — this reads what landed there.
+    var readHostText: () -> String? = { nil }
+    /// Clears the host field's current text (used before inserting a polished
+    /// translation, so it replaces the rough draft instead of appending to it).
+    var clearHostText: () -> Void = {}
     var insert: (String) -> Void = { _ in }
     var advanceKeyboard: () -> Void = {}
     var needsNextKeyboardButton = true
@@ -71,10 +84,39 @@ final class KeyboardViewModel: ObservableObject {
         guard let text = readClipboard()?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else {
             status = TranslationError.emptyClipboard.errorDescription; return
         }
+        inputSource = .clipboard
         input = text
         output = ""
         // The tap on "Wklej" is the user's explicit action, so translate right
-        // away — one step instead of two. (Clipboard is still only read on tap.)
+        // away — one step instead of two.
+        translate()
+    }
+
+    /// Silent variant used by clipboard auto-detection — same as
+    /// `pasteFromClipboard()` but doesn't complain if the clipboard is empty or
+    /// unreadable (there's no explicit user tap to report an error against).
+    private func autoTranslateFromClipboard(_ text: String) {
+        inputSource = .clipboard
+        input = text
+        output = ""
+        translate()
+    }
+
+    /// "Odbierz z WhatsApp": reads whatever is currently typed or dictated in the
+    /// host app's own field (using the system keyboard's dictation mic, since our
+    /// extension can't access the microphone directly), then cleans it up and
+    /// translates it. Used to compose replies without a letter keyboard of our own.
+    func loadFromWhatsApp() {
+        status = nil
+        guard settings.useMockService || hasFullAccess() else {
+            status = TranslationError.noFullAccess.errorDescription; return
+        }
+        guard let text = readHostText()?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else {
+            status = "Napisz lub podyktuj odpowiedź w polu WhatsApp, potem dotknij tutaj"; return
+        }
+        inputSource = .whatsapp
+        input = text
+        output = ""
         translate()
     }
 
@@ -130,10 +172,32 @@ final class KeyboardViewModel: ObservableObject {
     /// left in the panel and can still be inserted manually with "Wstaw".
     private func autoInsertIfReply() {
         guard !output.isEmpty, !outputLang.code.isEmpty, outputLang.code != "pl" else { return }
+        // If the source was WhatsApp's own field (typed or dictated draft), clear
+        // it first so the polished translation replaces it instead of appending.
+        if inputSource == .whatsapp { clearHostText() }
         insert(output)
         status = "Wstawiono do WhatsApp — wyślij sam"
         input = ""
         output = ""
+        inputSource = .none
+    }
+
+    // MARK: - Clipboard auto-detection
+
+    private var lastSeenClipboardChangeCount: Int?
+
+    /// Called by the controller whenever the keyboard becomes visible and on a
+    /// light poll while it stays visible. If the clipboard changed since we last
+    /// looked, auto-run the paste+translate flow — no tap needed. Reading only
+    /// happens while this keyboard is the active one (the user deliberately
+    /// switched to it), never in the background.
+    func checkClipboardForAutoTranslate(changeCount: Int, contents: String?) {
+        guard settings.useMockService || hasFullAccess() else { return }
+        defer { lastSeenClipboardChangeCount = changeCount }
+        guard lastSeenClipboardChangeCount != changeCount else { return }
+        guard let text = contents?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return }
+        guard text != input else { return }
+        autoTranslateFromClipboard(text)
     }
 
     /// Long-press on the chip: Auto ⇄ manual switch.
