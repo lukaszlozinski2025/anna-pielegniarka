@@ -66,29 +66,33 @@ struct KeyboardView: View {
 
     // MARK: - Top strip
     //
-    // Just the two mandatory/functional controls on the left (next-keyboard,
-    // options) and the big keyboard show/hide toggle alone on the right — no
-    // logo, no permanent language pill (that's now a transient badge over the
-    // input box instead).
+    // A transparent strip (no solid bar) with two circular, ~50%-frosted CTA
+    // buttons "punched" into it: options (hamburger) on the left, the keyboard
+    // show/hide toggle on the right. The mandatory next-keyboard globe tucks in
+    // beside the hamburger only when the system requires it.
 
     private var topStrip: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
+            circleControl(
+                icon: model.expanded ? "chevron.down" : "slider.horizontal.3",
+                tint: pal.dim,
+                fill: pal.key.opacity(0.5),
+                glow: false,
+                action: model.toggleExpand
+            )
+            .accessibilityLabel("Więcej opcji")
+
             if model.needsNextKeyboardButton {
-                Button(action: model.advanceKeyboard) {
-                    Image(systemName: "globe")
-                        .font(.system(size: 17, weight: .regular))
-                        .foregroundStyle(pal.dim)
-                        .frame(width: 34, height: 34)
-                }
+                circleControl(
+                    icon: "globe",
+                    tint: pal.dim,
+                    fill: pal.key.opacity(0.5),
+                    glow: false,
+                    action: model.advanceKeyboard
+                )
                 .accessibilityLabel("Następna klawiatura")
             }
-            Button(action: model.toggleExpand) {
-                Image(systemName: model.expanded ? "chevron.down" : "slider.horizontal.3")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(pal.dim)
-                    .frame(width: 34, height: 34)
-            }
-            .accessibilityLabel("Więcej opcji")
+
             Spacer()
             if model.busy { ProgressView().scaleEffect(0.7).tint(pal.accent) }
             keyboardToggleButton
@@ -99,25 +103,37 @@ struct KeyboardView: View {
 
     /// Chowa klawiaturę / wysuwa ją z powrotem — patrz `KeyboardViewModel.collapseKeyboard()`
     /// i `.expandKeyboard()`. Same "keyboard" glyph both ways; only the highlight
-    /// changes — muted while the QWERTY is already showing (nothing to draw
-    /// attention to), a soft accent glow while collapsed (there's a translation
-    /// waiting behind it).
+    /// changes — a muted frosted circle while the QWERTY is showing, a soft green
+    /// glow once collapsed (there's a translation waiting behind it).
     private var keyboardToggleButton: some View {
         let collapsed = !model.showKeyboard
         let disabled = model.showKeyboard && model.output.isEmpty
-        return Button(action: {
-            if model.showKeyboard { model.collapseKeyboard() } else { model.expandKeyboard() }
-        }) {
-            Image(systemName: "keyboard")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(collapsed ? pal.accent : pal.dim.opacity(disabled ? 0.35 : 0.9))
-                .frame(width: 38, height: 38)
-                .background(collapsed ? pal.accent.opacity(0.16) : Color.clear)
-                .clipShape(Circle())
-                .shadow(color: collapsed ? pal.accent.opacity(0.35) : .clear, radius: 5)
-        }
+        return circleControl(
+            icon: "keyboard",
+            tint: collapsed ? pal.accent : pal.dim.opacity(disabled ? 0.4 : 0.9),
+            fill: collapsed ? pal.accent.opacity(0.5) : pal.key.opacity(0.5),
+            glow: collapsed,
+            action: { if model.showKeyboard { model.collapseKeyboard() } else { model.expandKeyboard() } }
+        )
         .disabled(disabled)
         .accessibilityLabel(collapsed ? "Wysuń klawiaturę" : "Schowaj klawiaturę, pokaż tłumaczenie")
+    }
+
+    /// A round, semi-transparent control button — the frosted "cut-out" look for
+    /// the top strip.
+    private func circleControl(icon: String, tint: Color, fill: Color, glow: Bool,
+                               action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(tint)
+                .frame(width: 36, height: 36)
+                .background(fill)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(pal.hairline, lineWidth: 0.5))
+                .shadow(color: glow ? pal.accent.opacity(0.4) : .clear, radius: 5)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Typing mode (big input box above the QWERTY)

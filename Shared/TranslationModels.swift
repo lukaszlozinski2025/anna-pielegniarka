@@ -104,7 +104,7 @@ enum TranslationError: LocalizedError {
         case .noFullAccess:  return "Włącz Pełny dostęp w ustawieniach iPhone, żeby używać tłumaczenia AI"
         case .emptyClipboard: return "Najpierw skopiuj wiadomość z WhatsAppa"
         case .emptyInput:    return "Najpierw wpisz lub wklej tekst"
-        case .missingAPIKey: return "Dodaj klucz Anthropic API w aplikacji AI Translate"
+        case .missingAPIKey: return "Dodaj klucz API: dotknij ⚙ w klawiaturze → „Wklej klucz ze schowka”"
         case .api(let msg):  return msg.isEmpty ? "Błąd tłumaczenia — spróbuj ponownie" : msg
         case .decoding:      return "Nie udało się odczytać odpowiedzi — spróbuj ponownie"
         }
