@@ -82,27 +82,26 @@ struct KeyboardView: View {
     }
 
     /// Chowa klawiaturę / wysuwa ją z powrotem — patrz `KeyboardViewModel.collapseKeyboard()`
-    /// i `.expandKeyboard()`.
-    @ViewBuilder
+    /// i `.expandKeyboard()`. Same "keyboard" glyph both ways; only the highlight
+    /// changes — muted while the QWERTY is already showing (nothing to draw
+    /// attention to), a soft accent glow while collapsed (there's a translation
+    /// waiting behind it).
     private var keyboardToggleButton: some View {
-        if model.showKeyboard {
-            Button(action: model.collapseKeyboard) {
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(model.output.isEmpty ? pal.dim.opacity(0.35) : pal.dim)
-                    .frame(width: 34, height: 34)
-            }
-            .disabled(model.output.isEmpty)
-            .accessibilityLabel("Schowaj klawiaturę, pokaż tłumaczenie")
-        } else {
-            Button(action: model.expandKeyboard) {
-                Image(systemName: "keyboard")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(pal.accent)
-                    .frame(width: 34, height: 34)
-            }
-            .accessibilityLabel("Wysuń klawiaturę")
+        let collapsed = !model.showKeyboard
+        let disabled = model.showKeyboard && model.output.isEmpty
+        return Button(action: {
+            if model.showKeyboard { model.collapseKeyboard() } else { model.expandKeyboard() }
+        }) {
+            Image(systemName: "keyboard")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(collapsed ? pal.accent : pal.dim.opacity(disabled ? 0.35 : 0.9))
+                .frame(width: 38, height: 38)
+                .background(collapsed ? pal.accent.opacity(0.16) : Color.clear)
+                .clipShape(Circle())
+                .shadow(color: collapsed ? pal.accent.opacity(0.35) : .clear, radius: 5)
         }
+        .disabled(disabled)
+        .accessibilityLabel(collapsed ? "Wysuń klawiaturę" : "Schowaj klawiaturę, pokaż tłumaczenie")
     }
 
     // MARK: - Typing mode (big input box above the QWERTY)
