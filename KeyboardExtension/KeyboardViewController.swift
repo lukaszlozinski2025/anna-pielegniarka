@@ -1,22 +1,18 @@
 import UIKit
 import SwiftUI
-import Combine
 
 /// Custom keyboard host. Loads shared settings, hosts the SwiftUI panel, and
 /// bridges the SwiftUI view model to UIKit APIs (clipboard, text proxy, next
-/// keyboard, full-access check). Keeps the panel as short as possible and grows
-/// only when the user expands "więcej opcji".
+/// keyboard, full-access check).
 final class KeyboardViewController: UIInputViewController {
 
     private var model: KeyboardViewModel!
     private var hosting: UIHostingController<KeyboardView>!
     private var heightConstraint: NSLayoutConstraint!
-    private var cancellables = Set<AnyCancellable>()
 
-    private func targetHeight(expanded: Bool, hasOutput: Bool) -> CGFloat {
-        if expanded { return hasOutput ? 344 : 300 }
-        return hasOutput ? 214 : 150
-    }
+    /// Match the standard iOS keyboard footprint so we occupy the same space as
+    /// the WhatsApp keyboard instead of a small floating panel.
+    private let keyboardHeight: CGFloat = 300
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,25 +37,9 @@ final class KeyboardViewController: UIInputViewController {
             hosting.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
 
-        heightConstraint = view.heightAnchor.constraint(equalToConstant: targetHeight(expanded: false, hasOutput: false))
+        heightConstraint = view.heightAnchor.constraint(equalToConstant: keyboardHeight)
         heightConstraint.priority = UILayoutPriority(999)
         heightConstraint.isActive = true
-
-        // Keep the panel as short as possible: grow only when a result is shown
-        // or the options section is expanded.
-        model.$expanded
-            .combineLatest(model.$output.map { !$0.isEmpty })
-            .map { [weak self] expanded, hasOutput in
-                self?.targetHeight(expanded: expanded, hasOutput: hasOutput) ?? 150
-            }
-            .removeDuplicates()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] height in
-                guard let self else { return }
-                self.heightConstraint.constant = height
-                self.view.layoutIfNeeded()
-            }
-            .store(in: &cancellables)
     }
 
     private func wireModel() {

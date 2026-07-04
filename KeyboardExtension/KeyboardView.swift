@@ -1,137 +1,145 @@
 import SwiftUI
 
-/// Compact keyboard panel. One input, three CTAs in a row (Wklej / Przetłumacz /
-/// mode chip), and contextual output + insert. Extra options live behind "więcej".
+/// Light, native-looking keyboard styled after the iOS system keyboard:
+/// light-grey ground, white rounded "keys" with a hard 1pt bottom shadow, black
+/// text, and a WhatsApp-green primary action. Fills the standard keyboard height.
 struct KeyboardView: View {
     @ObservedObject var model: KeyboardViewModel
+    @Environment(\.colorScheme) private var scheme
+
+    private var pal: KBPalette { KBPalette.forScheme(scheme) }
 
     var body: some View {
-        VStack(spacing: 7) {
-            topBar
+        VStack(spacing: 0) {
+            topStrip
+            Rectangle().fill(pal.hairline).frame(height: 0.5)
 
-            // Single input — paste into it or type your reply.
-            TextField("Wpisz lub wklej tekst…", text: $model.input, axis: .vertical)
-                .lineLimit(1...3)
-                .font(.subheadline)
-                .foregroundStyle(Theme.text)
-                .padding(.horizontal, 10).padding(.vertical, 8)
-                .background(Theme.card)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-
-            // Three CTAs in one row.
-            HStack(spacing: 7) {
-                cta("Wklej", icon: "doc.on.clipboard", filled: false, weight: 3) { model.pasteFromClipboard() }
-                cta("Przetłumacz", icon: "sparkles", filled: true, weight: 4) { model.translate() }
-                modeChip
+            VStack(spacing: 8) {
+                inputField
+                mainArea
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                keysRow
             }
-
-            // Only show the result + insert when there is one.
-            if !model.output.isEmpty {
-                HStack(spacing: 7) {
-                    Text(model.output)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Theme.text)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .lineLimit(3)
-                        .textSelection(.enabled)
-                        .padding(.horizontal, 10).padding(.vertical, 8)
-                        .background(Theme.accent.opacity(0.12))
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                    Button(action: model.insertResult) {
-                        Image(systemName: "paperplane.fill")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(Theme.bg)
-                            .frame(width: 46, height: 40)
-                            .background(Theme.accent)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                    .accessibilityLabel("Wstaw do WhatsApp")
-                }
-            }
-
-            if let status = model.status {
-                Text(status)
-                    .font(.caption2)
-                    .foregroundStyle(status.hasPrefix("Wstawiono") ? Theme.accent : Theme.danger)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            if model.expanded { moreOptions }
-
-            Spacer(minLength: 0)
+            .padding(.horizontal, 6)
+            .padding(.top, 8)
+            .padding(.bottom, 6)
         }
-        .padding(10)
-        .background(Theme.bg)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(pal.bg)
     }
 
-    // MARK: - Top bar
+    // MARK: - Top strip (suggestion-bar style)
 
-    private var topBar: some View {
+    private var topStrip: some View {
         HStack(spacing: 8) {
             if model.needsNextKeyboardButton {
                 Button(action: model.advanceKeyboard) {
                     Image(systemName: "globe")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Theme.textDim)
-                        .frame(width: 28, height: 26)
+                        .font(.system(size: 17, weight: .regular))
+                        .foregroundStyle(pal.dim)
+                        .frame(width: 30, height: 34)
                 }
                 .accessibilityLabel("Następna klawiatura")
             }
             Text("AI Translate")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(Theme.accent)
-
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(pal.dim)
             if let indicator = model.langIndicator {
                 Text(indicator)
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(Theme.text)
-                    .padding(.horizontal, 7).padding(.vertical, 2)
-                    .background(Theme.card)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(pal.keyText)
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(pal.key)
                     .clipShape(Capsule())
             }
-
             Spacer()
-            if model.busy { ProgressView().scaleEffect(0.7).tint(Theme.accent) }
-
+            if model.busy { ProgressView().scaleEffect(0.7).tint(pal.accent) }
             Button(action: model.toggleExpand) {
-                Image(systemName: model.expanded ? "chevron.up" : "slider.horizontal.3")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Theme.textDim)
-                    .frame(width: 28, height: 26)
+                Image(systemName: model.expanded ? "chevron.down" : "slider.horizontal.3")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(pal.dim)
+                    .frame(width: 34, height: 34)
             }
             .accessibilityLabel("Więcej opcji")
         }
+        .padding(.horizontal, 8)
+        .frame(height: 40)
     }
 
-    // MARK: - Mode chip (Auto ⇄ manual switch)
+    // MARK: - Input field
 
-    private var modeChip: some View {
-        let manual = model.mode == .manual
-        return Text(model.modeLabel)
-            .font(.caption.weight(.bold))
-            .foregroundStyle(manual ? Theme.bg : Theme.accent)
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
-            .frame(width: 76, height: 40)
-            .background(manual ? Theme.accent : Theme.accent.opacity(0.12))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Theme.accent.opacity(manual ? 0 : 0.35), lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .contentShape(Rectangle())
-            .onTapGesture { model.tapMode() }
-            .onLongPressGesture(minimumDuration: 1.0) { model.toggleMode() }
+    private var inputField: some View {
+        TextField("Wpisz lub wklej tekst…", text: $model.input, axis: .vertical)
+            .lineLimit(1...2)
+            .font(.system(size: 16))
+            .foregroundStyle(pal.fieldText)
+            .padding(.horizontal, 12).padding(.vertical, 9)
+            .background(pal.field)
+            .clipShape(RoundedRectangle(cornerRadius: 9))
+            .overlay(RoundedRectangle(cornerRadius: 9).stroke(pal.hairline, lineWidth: 0.5))
     }
 
-    // MARK: - Expanded options
+    // MARK: - Main area (result card / options), fills the height
 
-    private var moreOptions: some View {
-        VStack(spacing: 8) {
+    private var mainArea: some View {
+        Group {
+            if model.expanded {
+                optionsCard
+            } else {
+                resultCard
+            }
+        }
+    }
+
+    private var resultCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text("Kierunek")
-                    .font(.caption).foregroundStyle(Theme.textDim)
+                Text(model.output.isEmpty ? "Tłumaczenie pojawi się tutaj" : "Tłumaczenie")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(pal.dim)
+                Spacer()
+                if !model.output.isEmpty {
+                    Button(action: model.insertResult) {
+                        Label("Wstaw", systemImage: "paperplane.fill")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(pal.accent)
+                    }
+                }
+            }
+            if model.output.isEmpty {
+                Spacer()
+                Text("Wklej wiadomość rozmówcy, żeby zobaczyć ją po polsku — albo wpisz odpowiedź i przetłumacz.")
+                    .font(.system(size: 13))
+                    .foregroundStyle(pal.dim)
+                Spacer()
+            } else {
+                ScrollView {
+                    Text(model.output)
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(pal.fieldText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                }
+            }
+            if let status = model.status {
+                Text(status)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(status.hasPrefix("Wstawiono") ? pal.accent : pal.danger)
+                    .lineLimit(1)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(pal.key)
+        .clipShape(RoundedRectangle(cornerRadius: 11))
+    }
+
+    private var optionsCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Opcje").font(.system(size: 11, weight: .semibold)).foregroundStyle(pal.dim)
+
+            HStack {
+                Text("Kierunek").font(.system(size: 14)).foregroundStyle(pal.fieldText)
                 Spacer()
                 Picker("", selection: Binding(
                     get: { model.mode == .auto },
@@ -141,43 +149,105 @@ struct KeyboardView: View {
                     Text("Ręczny").tag(false)
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 150)
+                .frame(width: 160)
             }
             if model.mode == .manual {
                 Toggle("Tłumacz na polski", isOn: $model.manualToPolish)
-                    .font(.caption)
-                    .tint(Theme.accent)
+                    .font(.system(size: 14))
+                    .tint(pal.accent)
+                    .foregroundStyle(pal.fieldText)
             }
             HStack {
                 Text("Model: \(model.settings.model.badge)")
-                    .font(.caption2).foregroundStyle(Theme.textDim)
+                    .font(.system(size: 13)).foregroundStyle(pal.dim)
                 Spacer()
                 Button("Wyczyść", role: .destructive, action: model.clearAll)
-                    .font(.caption.weight(.semibold))
-                    .tint(Theme.danger)
+                    .font(.system(size: 14, weight: .semibold))
+                    .tint(pal.danger)
             }
+            Spacer()
         }
-        .padding(10)
-        .background(Theme.panel)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(14)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(pal.key)
+        .clipShape(RoundedRectangle(cornerRadius: 11))
     }
 
-    // MARK: - CTA builder
+    // MARK: - Bottom keys
 
-    private func cta(_ title: String, icon: String, filled: Bool, weight: Double, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+    private var keysRow: some View {
+        HStack(spacing: 6) {
+            key("Wklej", icon: "doc.on.clipboard", style: .white) { model.pasteFromClipboard() }
+                .frame(maxWidth: .infinity)
+            key("Przetłumacz", icon: "sparkles", style: .accent) { model.translate() }
+                .frame(maxWidth: .infinity)
+            modeChip
+        }
+        .frame(height: 50)
+    }
+
+    private var modeChip: some View {
+        let manual = model.mode == .manual
+        return Text(model.modeLabel)
+            .font(.system(size: 14, weight: .bold))
+            .foregroundStyle(manual ? pal.accentText : pal.keyText)
+            .lineLimit(1).minimumScaleFactor(0.7)
+            .frame(width: 82)
+            .frame(maxHeight: .infinity)
+            .background(manual ? pal.accent : pal.key)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .keyShadow(pal)
+            .contentShape(Rectangle())
+            .onTapGesture { model.tapMode() }
+            .onLongPressGesture(minimumDuration: 1.0) { model.toggleMode() }
+    }
+
+    private enum KeyStyle { case white, accent }
+
+    private func key(_ title: String, icon: String, style: KeyStyle, action: @escaping () -> Void) -> some View {
+        let accent = style == .accent
+        return Button(action: action) {
             HStack(spacing: 5) {
-                Image(systemName: icon).font(.system(size: 12, weight: .semibold))
-                Text(title).fontWeight(.bold).lineLimit(1).minimumScaleFactor(0.8)
+                Image(systemName: icon).font(.system(size: 13, weight: .semibold))
+                Text(title).font(.system(size: 15, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
             }
-            .font(.footnote)
-            .frame(maxWidth: .infinity)
-            .frame(height: 40)
-            .foregroundStyle(filled ? Theme.bg : Theme.accent)
-            .background(filled ? Theme.accent : Theme.accent.opacity(0.12))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .foregroundStyle(accent ? pal.accentText : pal.keyText)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(accent ? pal.accent : pal.key)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .keyShadow(pal)
         }
         .buttonStyle(.plain)
-        .layoutPriority(weight)
+    }
+}
+
+// MARK: - Palette + key shadow
+
+struct KBPalette {
+    let bg: Color, key: Color, keyText: Color, accent: Color, accentText: Color
+    let field: Color, fieldText: Color, dim: Color, hairline: Color, danger: Color
+
+    static func forScheme(_ scheme: ColorScheme) -> KBPalette {
+        if scheme == .dark {
+            return KBPalette(
+                bg: Color(hex: 0x1C1C1E), key: Color(hex: 0x3A3A3C), keyText: .white,
+                accent: Color(hex: 0x25D366), accentText: .white,
+                field: Color(hex: 0x2C2C2E), fieldText: .white,
+                dim: Color(hex: 0x9AA0A8), hairline: .white.opacity(0.12), danger: Color(hex: 0xFF6B81)
+            )
+        }
+        return KBPalette(
+            bg: Color(hex: 0xD1D4DB), key: .white, keyText: Color(hex: 0x1C1C1E),
+            accent: Color(hex: 0x25D366), accentText: .white,
+            field: .white, fieldText: Color(hex: 0x1C1C1E),
+            dim: Color(hex: 0x6B7280), hairline: .black.opacity(0.10), danger: Color(hex: 0xE0245E)
+        )
+    }
+}
+
+private extension View {
+    /// The hard 1pt bottom shadow iOS keys have.
+    func keyShadow(_ pal: KBPalette) -> some View {
+        shadow(color: .black.opacity(0.22), radius: 0, x: 0, y: 1)
     }
 }
