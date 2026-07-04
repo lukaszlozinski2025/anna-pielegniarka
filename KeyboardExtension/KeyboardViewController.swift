@@ -18,12 +18,6 @@ final class KeyboardViewController: UIInputViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Lets typeCharacter()/backspace() play the system key-click via
-        // UIDevice.playInputClick() — the sanctioned way for a keyboard
-        // extension to make key-press sound (respects the user's Sound
-        // settings, unlike raw AudioServicesPlaySystemSound).
-        enableInputClicksWhenVisible = true
-
         let settings = AppGroupSettings()
         settings.load()
 
@@ -89,4 +83,12 @@ final class KeyboardViewController: UIInputViewController {
         model.copyToClipboard = { text in UIPasteboard.general.string = text }
         model.playClickSound = { UIDevice.current.playInputClick() }
     }
+}
+
+/// Opting in to key-click feedback: `UIDevice.playInputClick()` only makes a
+/// sound when an object in the input responder chain conforms to
+/// `UIInputViewAudioFeedback` and returns `true` here. It respects the user's
+/// "Keyboard Clicks" system setting — no sound if they've turned it off.
+extension KeyboardViewController: UIInputViewAudioFeedback {
+    var enableInputClicksWhenVisible: Bool { true }
 }
