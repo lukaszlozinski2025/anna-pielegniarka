@@ -59,6 +59,9 @@ struct KeyboardView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(pal.bg)
+        // Neon "flag rim": the panel looks laid on top of the target language's
+        // flag, only the horizontal bands peeking at the edges (PL = white/red).
+        .neonFlagRim(for: model.outputLang)
     }
 
     // MARK: - Top strip
