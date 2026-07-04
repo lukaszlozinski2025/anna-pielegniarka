@@ -24,6 +24,9 @@ final class KeyboardViewModel: ObservableObject {
     /// showing instead. Toggled by the chevron in the top strip, or automatically once
     /// a translation lands.
     @Published var showKeyboard = true
+    /// Briefly true right after Auto mode detects a language — drives a transient,
+    /// fading badge above the input box rather than a permanent indicator.
+    @Published var showLangBadge = false
 
     let settings: AppGroupSettings
     private let service: TranslationService
@@ -74,14 +77,13 @@ final class KeyboardViewModel: ObservableObject {
         }
     }
 
-    /// Flags shown in the top bar once we know the languages.
-    var langIndicator: String? {
-        if !output.isEmpty {
-            let from = detectedForeign?.flag ?? outputLang.flag
-            return "\(from) → \(outputLang.flag)"
+    /// Shows the transient language badge for ~1.8s, then hides it again.
+    private func flashLangBadge() {
+        showLangBadge = true
+        Task {
+            try? await Task.sleep(nanoseconds: 1_800_000_000)
+            self.showLangBadge = false
         }
-        if let f = detectedForeign { return "\(f.flag) \(f.badge)" }
-        return nil
     }
 
     // MARK: - Actions
@@ -148,12 +150,15 @@ final class KeyboardViewModel: ObservableObject {
 
         Task {
             do {
+                var justDetectedLanguage = false
                 if mode == .auto {
                     let r = try await self.service.smartTranslate(text: text, replyTargetHint: hint)
                     self.output = r.text
                     self.outputLang = r.targetLang
                     if !r.sourceLang.code.isEmpty && r.sourceLang.code != "pl" {
                         self.detectedForeign = r.sourceLang       // remember the conversation language
+                        self.flashLangBadge()
+                        justDetectedLanguage = true
                     }
                 } else {
                     let t = try await self.service.translate(text: text, from: nil, to: manualTarget.name)
@@ -164,8 +169,15 @@ final class KeyboardViewModel: ObservableObject {
                 self.record(source: text, result: self.output)
                 self.autoInsertIfReply()
                 // A translation just landed — reveal it (unless autoInsertIfReply
-                // already consumed it and cleared the output above).
-                if !self.output.isEmpty { self.showKeyboard = false }
+                // already consumed it and cleared the output above). Give the
+                // "language detected" badge a beat on screen first, otherwise it'd
+                // flash on a view that's collapsing away in the same instant.
+                if !self.output.isEmpty {
+                    if justDetectedLanguage {
+                        try? await Task.sleep(nanoseconds: 500_000_000)
+                    }
+                    self.showKeyboard = false
+                }
             } catch {
                 self.busy = false
                 self.status = (error as? TranslationError)?.errorDescription ?? error.localizedDescription
@@ -275,6 +287,13 @@ final class KeyboardViewModel: ObservableObject {
         guard !input.isEmpty else { return }
         input.removeLast()
         playClickSound()
+    }
+
+    /// A keyboard extension can never get microphone access (hard iOS limit,
+    /// true for every custom keyboard, not just ours) — tapping the mic-slash
+    /// badge over the input box explains why, instead of silently doing nothing.
+    func explainMicLimitation() {
+        status = "Mikrofon niedostępny w klawiaturze (ograniczenie iOS) — podyktuj w WhatsApp, potem dotknij „Odbierz”."
     }
 
     // MARK: - API key (entered here because a free Apple ID can't share it via App Group)

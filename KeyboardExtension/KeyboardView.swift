@@ -27,8 +27,27 @@ struct KeyboardView: View {
                 } else if model.showKeyboard {
                     VStack(spacing: 6) {
                         inputBox
+                        if let status = model.status {
+                            Text(status)
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(pal.dim)
+                                .lineLimit(2)
+                        }
                         QwertyKeyboardView(model: model, pal: pal)
                     }
+                    .overlay(alignment: .topTrailing) {
+                        if model.showLangBadge, let f = model.detectedForeign {
+                            Text("\(f.flag) \(f.badge) wykryto")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(pal.keyText)
+                                .padding(.horizontal, 10).padding(.vertical, 5)
+                                .background(pal.key.opacity(0.55))
+                                .clipShape(Capsule())
+                                .offset(y: -13)
+                                .transition(.opacity)
+                        }
+                    }
+                    .animation(.easeInOut(duration: 0.25), value: model.showLangBadge)
                 } else {
                     resultCard
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -42,33 +61,24 @@ struct KeyboardView: View {
         .background(pal.bg)
     }
 
-    // MARK: - Top strip (suggestion-bar style)
+    // MARK: - Top strip
+    //
+    // Just the two mandatory/functional controls on the left (next-keyboard,
+    // options) and the big keyboard show/hide toggle alone on the right — no
+    // logo, no permanent language pill (that's now a transient badge over the
+    // input box instead).
 
     private var topStrip: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             if model.needsNextKeyboardButton {
                 Button(action: model.advanceKeyboard) {
                     Image(systemName: "globe")
                         .font(.system(size: 17, weight: .regular))
                         .foregroundStyle(pal.dim)
-                        .frame(width: 30, height: 34)
+                        .frame(width: 34, height: 34)
                 }
                 .accessibilityLabel("Następna klawiatura")
             }
-            Text("AI Translate")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(pal.dim)
-            if let indicator = model.langIndicator {
-                Text(indicator)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(pal.keyText)
-                    .padding(.horizontal, 8).padding(.vertical, 3)
-                    .background(pal.key)
-                    .clipShape(Capsule())
-            }
-            Spacer()
-            if model.busy { ProgressView().scaleEffect(0.7).tint(pal.accent) }
-            keyboardToggleButton
             Button(action: model.toggleExpand) {
                 Image(systemName: model.expanded ? "chevron.down" : "slider.horizontal.3")
                     .font(.system(size: 15, weight: .medium))
@@ -76,6 +86,9 @@ struct KeyboardView: View {
                     .frame(width: 34, height: 34)
             }
             .accessibilityLabel("Więcej opcji")
+            Spacer()
+            if model.busy { ProgressView().scaleEffect(0.7).tint(pal.accent) }
+            keyboardToggleButton
         }
         .padding(.horizontal, 8)
         .frame(height: 40)
@@ -106,54 +119,42 @@ struct KeyboardView: View {
 
     // MARK: - Typing mode (big input box above the QWERTY)
 
-    /// Where you compose: multi-line, blinking cursor, and — always visible per
-    /// spec — a clear Wklej button plus a compact "odbierz z WhatsApp" shortcut.
-    /// Typing on `QwertyKeyboardView` below writes straight into `model.input` —
-    /// there's no system-keyboard-editable field here, so this is display-only.
+    /// Where you compose: multi-line, blinking cursor. Odbierz/Wklej now live
+    /// as keys in the QWERTY's bottom row, so this box is full-width text only
+    /// (plus the mic-limitation badge in the corner). Typing on
+    /// `QwertyKeyboardView` below writes straight into `model.input` — there's
+    /// no system-keyboard-editable field here, so this is display-only.
     private var inputBox: some View {
-        HStack(alignment: .top, spacing: 8) {
-            ScrollView {
-                HStack(alignment: .top, spacing: 3) {
-                    Text(model.input.isEmpty ? "Pisz wiadomość…" : model.input)
-                        .font(.system(size: 17))
-                        .foregroundStyle(model.input.isEmpty ? pal.dim : pal.fieldText)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                    if !model.input.isEmpty {
-                        BlinkingCursor(color: pal.fieldText)
-                    }
+        ScrollView {
+            HStack(alignment: .top, spacing: 3) {
+                Text(model.input.isEmpty ? "Pisz wiadomość…" : model.input)
+                    .font(.system(size: 17))
+                    .foregroundStyle(model.input.isEmpty ? pal.dim : pal.fieldText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !model.input.isEmpty {
+                    BlinkingCursor(color: pal.fieldText)
                 }
             }
-            .frame(height: 56)
-
-            Button(action: model.loadFromWhatsApp) {
-                VStack(spacing: 3) {
-                    Image(systemName: "arrow.down.doc.fill").font(.system(size: 16, weight: .semibold))
-                    Text("Odbierz").font(.system(size: 9, weight: .semibold))
-                }
-                .foregroundStyle(pal.dim)
-                .frame(width: 54, height: 56)
-                .background(pal.key)
-                .clipShape(RoundedRectangle(cornerRadius: 9))
-            }
-            .buttonStyle(.plain)
-
-            Button(action: model.pasteFromClipboard) {
-                VStack(spacing: 3) {
-                    Image(systemName: "doc.on.clipboard.fill").font(.system(size: 17, weight: .semibold))
-                    Text("Wklej").font(.system(size: 10, weight: .bold))
-                }
-                .foregroundStyle(pal.accentText)
-                .frame(width: 58, height: 56)
-                .background(pal.accent)
-                .clipShape(RoundedRectangle(cornerRadius: 9))
-            }
-            .buttonStyle(.plain)
+            .padding(.trailing, 22)
         }
-        .padding(.horizontal, 8).padding(.vertical, 6)
+        .frame(height: 56)
+        .padding(.horizontal, 10).padding(.vertical, 6)
         .background(pal.field)
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(pal.hairline, lineWidth: 0.5))
+        .overlay(alignment: .topTrailing) {
+            Button(action: model.explainMicLimitation) {
+                Image(systemName: "mic.slash.fill")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(pal.dim)
+                    .padding(5)
+                    .background(pal.bg.opacity(0.9))
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .padding(4)
+        }
     }
 
     // MARK: - Result mode (fills the whole area, same footprint as the QWERTY)
@@ -207,6 +208,18 @@ struct KeyboardView: View {
     private var optionsCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Opcje").font(.system(size: 11, weight: .semibold)).foregroundStyle(pal.dim)
+
+            HStack {
+                Text("Język rozmowy").font(.system(size: 11, weight: .semibold)).foregroundStyle(pal.dim)
+                Spacer()
+                if let f = model.detectedForeign {
+                    Text("\(f.flag) \(f.name) ⇄ 🇵🇱 polski")
+                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(pal.fieldText)
+                } else {
+                    Text("zostanie wykryty automatycznie")
+                        .font(.system(size: 12)).foregroundStyle(pal.dim)
+                }
+            }
 
             HStack {
                 Text("Kierunek").font(.system(size: 14)).foregroundStyle(pal.fieldText)

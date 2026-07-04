@@ -49,14 +49,13 @@ struct QwertyKeyboardView: View {
                 utilityKey(icon: "delete.left.fill", width: 38) { model.backspace() }
             }
             HStack(spacing: 6) {
-                textKey(symbolsPage ? "ABC" : "123", width: 48) {
+                textKey(symbolsPage ? "ABC" : "123", width: 44) {
                     symbolsPage.toggle()
                     model.playClickSound()
                 }
-                if model.needsNextKeyboardButton {
-                    utilityKey(icon: "globe", width: 34) { model.advanceKeyboard() }
-                }
                 spaceKey
+                utilityKey(icon: "arrow.down.doc.fill", width: 38) { model.loadFromWhatsApp() }
+                pasteKey
                 translateKey
             }
         }
@@ -158,6 +157,17 @@ struct QwertyKeyboardView: View {
             .shadow(color: .black.opacity(0.22), radius: 0, x: 0, y: 1)
             .contentShape(Rectangle())
             .onTapGesture { model.typeCharacter(" ") }
+    }
+
+    private var pasteKey: some View {
+        Image(systemName: "doc.on.clipboard.fill")
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(pal.accentText)
+            .frame(width: 42, height: 40)
+            .background(pal.accent)
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .contentShape(Rectangle())
+            .onTapGesture { model.pasteFromClipboard() }
     }
 
     private var translateKey: some View {
