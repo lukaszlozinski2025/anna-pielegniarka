@@ -13,6 +13,8 @@ import SwiftUI
 struct KeyboardView: View {
     @ObservedObject var model: KeyboardViewModel
     @Environment(\.colorScheme) private var scheme
+    /// Drives the gyroscope-tracked glint on the round top-strip buttons.
+    @StateObject private var tilt = TiltMotion()
 
     private var pal: KBPalette { KBPalette.forScheme(scheme) }
 
@@ -62,6 +64,8 @@ struct KeyboardView: View {
         // Neon "flag rim": the panel looks laid on top of the target language's
         // flag, only the horizontal bands peeking at the edges (PL = white/red).
         .neonFlagRim(for: model.outputLang)
+        .onAppear { tilt.start() }
+        .onDisappear { tilt.stop() }
     }
 
     // MARK: - Top strip
@@ -120,7 +124,8 @@ struct KeyboardView: View {
     }
 
     /// A round, semi-transparent control button — the frosted "cut-out" look for
-    /// the top strip.
+    /// the top strip, with a specular glint that tracks the phone's tilt via the
+    /// gyroscope (the latest-iOS "liquid glass" highlight).
     private func circleControl(icon: String, tint: Color, fill: Color, glow: Bool,
                                action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -129,6 +134,7 @@ struct KeyboardView: View {
                 .foregroundStyle(tint)
                 .frame(width: 36, height: 36)
                 .background(fill)
+                .overlay(TiltGlint(motion: tilt))          // gyroscope shine
                 .clipShape(Circle())
                 .overlay(Circle().stroke(pal.hairline, lineWidth: 0.5))
                 .shadow(color: glow ? pal.accent.opacity(0.4) : .clear, radius: 5)

@@ -30,6 +30,7 @@
 		1A2B3C4D5E6F708090A00232 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00122 /* KeyboardView.swift */; };
 		1A2B3C4D5E6F708090A00233 /* QwertyKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00125 /* QwertyKeyboardView.swift */; };
 		1A2B3C4D5E6F708090A00234 /* NeonFlagBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00126 /* NeonFlagBorder.swift */; };
+		1A2B3C4D5E6F708090A00235 /* TiltMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00127 /* TiltMotion.swift */; };
 		1A2B3C4D5E6F708090A00240 /* KeyboardExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00061 /* KeyboardExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -80,6 +81,7 @@
 		1A2B3C4D5E6F708090A00122 /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708090A00125 /* QwertyKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QwertyKeyboardView.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708090A00126 /* NeonFlagBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeonFlagBorder.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00127 /* TiltMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TiltMotion.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708090A00123 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708090A00124 /* KeyboardExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyboardExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -158,6 +160,7 @@
 				1A2B3C4D5E6F708090A00122 /* KeyboardView.swift */,
 				1A2B3C4D5E6F708090A00125 /* QwertyKeyboardView.swift */,
 				1A2B3C4D5E6F708090A00126 /* NeonFlagBorder.swift */,
+				1A2B3C4D5E6F708090A00127 /* TiltMotion.swift */,
 				1A2B3C4D5E6F708090A00123 /* Info.plist */,
 				1A2B3C4D5E6F708090A00124 /* KeyboardExtension.entitlements */,
 			);
@@ -279,6 +282,7 @@
 				1A2B3C4D5E6F708090A00232 /* KeyboardView.swift in Sources */,
 				1A2B3C4D5E6F708090A00233 /* QwertyKeyboardView.swift in Sources */,
 				1A2B3C4D5E6F708090A00234 /* NeonFlagBorder.swift in Sources */,
+				1A2B3C4D5E6F708090A00235 /* TiltMotion.swift in Sources */,
 				1A2B3C4D5E6F708090A00220 /* AppGroup.swift in Sources */,
 				1A2B3C4D5E6F708090A00221 /* AppGroupSettings.swift in Sources */,
 				1A2B3C4D5E6F708090A00222 /* TranslationModels.swift in Sources */,
