@@ -41,6 +41,9 @@ final class KeyboardViewModel: ObservableObject {
     /// translation, so it replaces the rough draft instead of appending to it).
     var clearHostText: () -> Void = {}
     var insert: (String) -> Void = { _ in }
+    /// Writes text to the system clipboard, so the user can paste it themselves
+    /// (e.g. into WhatsApp's field with a long-press → Paste).
+    var copyToClipboard: (String) -> Void = { _ in }
     var advanceKeyboard: () -> Void = {}
     var needsNextKeyboardButton = true
 
@@ -160,21 +163,33 @@ final class KeyboardViewModel: ObservableObject {
         }
     }
 
+    /// Inserts the result into WhatsApp's field and returns to the typing view.
     func insertResult() {
         guard !output.isEmpty else { status = "Najpierw przetłumacz tekst"; return }
+        if inputSource == .whatsapp { clearHostText() }
         insert(output)
-        status = "Wstawiono do pola wiadomości"
+        status = "Wstawiono do WhatsApp — wyślij sam"
+        input = ""; output = ""; inputSource = .none
     }
 
-    /// When the result is an outgoing reply (translated into the conversation
-    /// language, not Polish), drop it straight into the WhatsApp field and reset
-    /// the panel for the next message. Polish results (incoming, for reading) are
-    /// left in the panel and can still be inserted manually with "Wstaw".
+    /// Copies the result to the clipboard. Unlike `insertResult()` this does NOT
+    /// clear the result — the user pastes it into WhatsApp themselves (long-press
+    /// → Wklej) and can copy again or keep composing.
+    func copyResult() {
+        guard !output.isEmpty else { status = "Najpierw przetłumacz tekst"; return }
+        copyToClipboard(output)
+        status = "Skopiowano ✓ — wklej w WhatsApp"
+    }
+
+    /// Auto-insert applies only to the "Odbierz z WhatsApp" dictation-cleanup
+    /// flow, where there's already a rough draft in WhatsApp's field to replace —
+    /// that's the one case where silently swapping it in is clearly wanted.
+    /// Messages composed on our own QWERTY are shown for review instead (Kopiuj /
+    /// Wstaw), since the user hasn't seen a draft in WhatsApp to compare against.
     private func autoInsertIfReply() {
+        guard inputSource == .whatsapp else { return }
         guard !output.isEmpty, !outputLang.code.isEmpty, outputLang.code != "pl" else { return }
-        // If the source was WhatsApp's own field (typed or dictated draft), clear
-        // it first so the polished translation replaces it instead of appending.
-        if inputSource == .whatsapp { clearHostText() }
+        clearHostText()
         insert(output)
         status = "Wstawiono do WhatsApp — wyślij sam"
         input = ""
@@ -214,7 +229,23 @@ final class KeyboardViewModel: ObservableObject {
     func toggleExpand() { expanded.toggle() }
 
     func clearAll() {
-        input = ""; output = ""; outputLang = .unknown; status = nil
+        input = ""; output = ""; outputLang = .unknown; status = nil; inputSource = .none
+    }
+
+    // MARK: - Own QWERTY (typing directly into the keyboard)
+
+    /// A keyboard extension can't summon a system keyboard for a text field of
+    /// its own, so composing a message here means our own on-screen QWERTY
+    /// appends characters straight to `input`.
+    func typeCharacter(_ c: String) {
+        inputSource = .none
+        input += c
+    }
+
+    func backspace() {
+        inputSource = .none
+        guard !input.isEmpty else { return }
+        input.removeLast()
     }
 
     // MARK: - API key (entered here because a free Apple ID can't share it via App Group)

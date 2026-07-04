@@ -28,6 +28,7 @@
 		1A2B3C4D5E6F708090A00230 /* KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00120 /* KeyboardViewController.swift */; };
 		1A2B3C4D5E6F708090A00231 /* KeyboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00121 /* KeyboardViewModel.swift */; };
 		1A2B3C4D5E6F708090A00232 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00122 /* KeyboardView.swift */; };
+		1A2B3C4D5E6F708090A00233 /* QwertyKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00125 /* QwertyKeyboardView.swift */; };
 		1A2B3C4D5E6F708090A00240 /* KeyboardExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F708090A00061 /* KeyboardExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -76,6 +77,7 @@
 		1A2B3C4D5E6F708090A00120 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708090A00121 /* KeyboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewModel.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708090A00122 /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F708090A00125 /* QwertyKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QwertyKeyboardView.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708090A00123 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1A2B3C4D5E6F708090A00124 /* KeyboardExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KeyboardExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -152,6 +154,7 @@
 				1A2B3C4D5E6F708090A00120 /* KeyboardViewController.swift */,
 				1A2B3C4D5E6F708090A00121 /* KeyboardViewModel.swift */,
 				1A2B3C4D5E6F708090A00122 /* KeyboardView.swift */,
+				1A2B3C4D5E6F708090A00125 /* QwertyKeyboardView.swift */,
 				1A2B3C4D5E6F708090A00123 /* Info.plist */,
 				1A2B3C4D5E6F708090A00124 /* KeyboardExtension.entitlements */,
 			);
@@ -271,6 +274,7 @@
 				1A2B3C4D5E6F708090A00230 /* KeyboardViewController.swift in Sources */,
 				1A2B3C4D5E6F708090A00231 /* KeyboardViewModel.swift in Sources */,
 				1A2B3C4D5E6F708090A00232 /* KeyboardView.swift in Sources */,
+				1A2B3C4D5E6F708090A00233 /* QwertyKeyboardView.swift in Sources */,
 				1A2B3C4D5E6F708090A00220 /* AppGroup.swift in Sources */,
 				1A2B3C4D5E6F708090A00221 /* AppGroupSettings.swift in Sources */,
 				1A2B3C4D5E6F708090A00222 /* TranslationModels.swift in Sources */,

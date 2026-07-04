@@ -80,5 +80,6 @@ final class KeyboardViewController: UIInputViewController {
             for _ in text { proxy.deleteBackward() }
         }
         model.insert = { [weak self] text in self?.textDocumentProxy.insertText(text) }
+        model.copyToClipboard = { text in UIPasteboard.general.string = text }
     }
 }
