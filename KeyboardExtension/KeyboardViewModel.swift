@@ -20,6 +20,10 @@ final class KeyboardViewModel: ObservableObject {
     @Published var expanded = false
     @Published var status: String?
     @Published var busy = false
+    /// true = QWERTY typing view is showing; false = the (bigger) translation view is
+    /// showing instead. Toggled by the chevron in the top strip, or automatically once
+    /// a translation lands.
+    @Published var showKeyboard = true
 
     let settings: AppGroupSettings
     private let service: TranslationService
@@ -46,6 +50,9 @@ final class KeyboardViewModel: ObservableObject {
     var copyToClipboard: (String) -> Void = { _ in }
     var advanceKeyboard: () -> Void = {}
     var needsNextKeyboardButton = true
+    /// The standard iOS key-click sound, via `UIDevice.playInputClick()` — only
+    /// audible if the user has "Keyboard Clicks" enabled in system Sound settings.
+    var playClickSound: () -> Void = {}
 
     init(settings: AppGroupSettings) {
         self.settings = settings
@@ -156,6 +163,9 @@ final class KeyboardViewModel: ObservableObject {
                 self.busy = false
                 self.record(source: text, result: self.output)
                 self.autoInsertIfReply()
+                // A translation just landed — reveal it (unless autoInsertIfReply
+                // already consumed it and cleared the output above).
+                if !self.output.isEmpty { self.showKeyboard = false }
             } catch {
                 self.busy = false
                 self.status = (error as? TranslationError)?.errorDescription ?? error.localizedDescription
@@ -170,6 +180,7 @@ final class KeyboardViewModel: ObservableObject {
         insert(output)
         status = "Wstawiono do WhatsApp — wyślij sam"
         input = ""; output = ""; inputSource = .none
+        showKeyboard = true
     }
 
     /// Copies the result to the clipboard. Unlike `insertResult()` this does NOT
@@ -230,6 +241,22 @@ final class KeyboardViewModel: ObservableObject {
 
     func clearAll() {
         input = ""; output = ""; outputLang = .unknown; status = nil; inputSource = .none
+        showKeyboard = true
+    }
+
+    // MARK: - Show/hide the QWERTY
+
+    /// Chevron tap while typing: hide the keyboard, reveal the (already
+    /// translated) result underneath.
+    func collapseKeyboard() { showKeyboard = false }
+
+    /// Chevron tap while viewing a result: bring the QWERTY back for the next
+    /// message. The old draft is done with, so clear it — the translation
+    /// itself stays put until overwritten by the next `translate()`.
+    func expandKeyboard() {
+        input = ""
+        inputSource = .none
+        showKeyboard = true
     }
 
     // MARK: - Own QWERTY (typing directly into the keyboard)
@@ -240,12 +267,14 @@ final class KeyboardViewModel: ObservableObject {
     func typeCharacter(_ c: String) {
         inputSource = .none
         input += c
+        playClickSound()
     }
 
     func backspace() {
         inputSource = .none
         guard !input.isEmpty else { return }
         input.removeLast()
+        playClickSound()
     }
 
     // MARK: - API key (entered here because a free Apple ID can't share it via App Group)

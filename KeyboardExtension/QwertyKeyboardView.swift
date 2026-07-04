@@ -40,13 +40,19 @@ struct QwertyKeyboardView: View {
             }
             HStack(spacing: 6) {
                 if !symbolsPage {
-                    utilityKey(icon: shift ? "shift.fill" : "shift", width: 38) { shift.toggle() }
+                    utilityKey(icon: shift ? "shift.fill" : "shift", width: 38) {
+                        shift.toggle()
+                        model.playClickSound()
+                    }
                 }
                 keyRow(symbolsPage ? row3Symbols : row3Letters)
                 utilityKey(icon: "delete.left.fill", width: 38) { model.backspace() }
             }
             HStack(spacing: 6) {
-                textKey(symbolsPage ? "ABC" : "123", width: 48) { symbolsPage.toggle() }
+                textKey(symbolsPage ? "ABC" : "123", width: 48) {
+                    symbolsPage.toggle()
+                    model.playClickSound()
+                }
                 if model.needsNextKeyboardButton {
                     utilityKey(icon: "globe", width: 34) { model.advanceKeyboard() }
                 }

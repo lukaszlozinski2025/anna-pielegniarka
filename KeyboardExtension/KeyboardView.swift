@@ -4,10 +4,12 @@ import SwiftUI
 /// light-grey ground, white rounded "keys" with a hard 1pt bottom shadow, black
 /// text, and a WhatsApp-green primary action. Fills the standard keyboard height.
 ///
-/// Three states, switched purely on `model.expanded` / `model.output`:
+/// Three states, switched on `model.expanded` / `model.showKeyboard`:
 /// - options open → `optionsCard`
-/// - no translation yet → preview line + `QwertyKeyboardView` (type here)
-/// - translated → `resultCard` (Kopiuj / Wstaw) + "Pisz nową wiadomość"
+/// - `showKeyboard == true` → `inputBox` (type here, big font, blinking cursor,
+///   Wklej/Odbierz) + `QwertyKeyboardView`
+/// - `showKeyboard == false` → `resultCard` alone, filling the whole area like
+///   the keyboard did — the blue translation, Kopiuj/Wstaw
 struct KeyboardView: View {
     @ObservedObject var model: KeyboardViewModel
     @Environment(\.colorScheme) private var scheme
@@ -22,21 +24,18 @@ struct KeyboardView: View {
             Group {
                 if model.expanded {
                     optionsCard
-                } else if model.output.isEmpty {
-                    VStack(spacing: 8) {
-                        previewBar
+                } else if model.showKeyboard {
+                    VStack(spacing: 6) {
+                        inputBox
                         QwertyKeyboardView(model: model, pal: pal)
                     }
                 } else {
-                    VStack(spacing: 8) {
-                        resultCard
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        resultActions
-                    }
+                    resultCard
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
             .padding(.horizontal, 6)
-            .padding(.top, 8)
+            .padding(.top, 6)
             .padding(.bottom, 6)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -69,6 +68,7 @@ struct KeyboardView: View {
             }
             Spacer()
             if model.busy { ProgressView().scaleEffect(0.7).tint(pal.accent) }
+            keyboardToggleButton
             Button(action: model.toggleExpand) {
                 Image(systemName: model.expanded ? "chevron.down" : "slider.horizontal.3")
                     .font(.system(size: 15, weight: .medium))
@@ -81,94 +81,128 @@ struct KeyboardView: View {
         .frame(height: 40)
     }
 
-    // MARK: - Typing mode (preview line above the QWERTY)
+    /// Chowa klawiaturę / wysuwa ją z powrotem — patrz `KeyboardViewModel.collapseKeyboard()`
+    /// i `.expandKeyboard()`.
+    @ViewBuilder
+    private var keyboardToggleButton: some View {
+        if model.showKeyboard {
+            Button(action: model.collapseKeyboard) {
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(model.output.isEmpty ? pal.dim.opacity(0.35) : pal.dim)
+                    .frame(width: 34, height: 34)
+            }
+            .disabled(model.output.isEmpty)
+            .accessibilityLabel("Schowaj klawiaturę, pokaż tłumaczenie")
+        } else {
+            Button(action: model.expandKeyboard) {
+                Image(systemName: "keyboard")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(pal.accent)
+                    .frame(width: 34, height: 34)
+            }
+            .accessibilityLabel("Wysuń klawiaturę")
+        }
+    }
 
-    /// Shows what's queued in `model.input` plus two shortcuts that skip typing
-    /// entirely: paste a copied message, or pull in a WhatsApp draft (typed or
-    /// dictated there) for cleanup. Typing on `QwertyKeyboardView` below writes
-    /// straight into `model.input` — there's no on-screen field to tap into here.
-    private var previewBar: some View {
-        HStack(spacing: 8) {
-            Text(model.input.isEmpty ? "Pisz wiadomość…" : model.input)
-                .font(.system(size: 13))
-                .foregroundStyle(model.input.isEmpty ? pal.dim : pal.fieldText)
-                .lineLimit(1)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Button(action: model.pasteFromClipboard) {
-                Image(systemName: "doc.on.clipboard")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(pal.dim)
+    // MARK: - Typing mode (big input box above the QWERTY)
+
+    /// Where you compose: multi-line, blinking cursor, and — always visible per
+    /// spec — a clear Wklej button plus a compact "odbierz z WhatsApp" shortcut.
+    /// Typing on `QwertyKeyboardView` below writes straight into `model.input` —
+    /// there's no system-keyboard-editable field here, so this is display-only.
+    private var inputBox: some View {
+        HStack(alignment: .top, spacing: 8) {
+            ScrollView {
+                HStack(alignment: .top, spacing: 3) {
+                    Text(model.input.isEmpty ? "Pisz wiadomość…" : model.input)
+                        .font(.system(size: 17))
+                        .foregroundStyle(model.input.isEmpty ? pal.dim : pal.fieldText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if !model.input.isEmpty {
+                        BlinkingCursor(color: pal.fieldText)
+                    }
+                }
+            }
+            .frame(height: 56)
+
+            Button(action: model.loadFromWhatsApp) {
+                VStack(spacing: 3) {
+                    Image(systemName: "arrow.down.doc.fill").font(.system(size: 16, weight: .semibold))
+                    Text("Odbierz").font(.system(size: 9, weight: .semibold))
+                }
+                .foregroundStyle(pal.dim)
+                .frame(width: 54, height: 56)
+                .background(pal.key)
+                .clipShape(RoundedRectangle(cornerRadius: 9))
             }
             .buttonStyle(.plain)
-            Button(action: model.loadFromWhatsApp) {
-                Image(systemName: "arrow.down.doc.fill")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(pal.dim)
+
+            Button(action: model.pasteFromClipboard) {
+                VStack(spacing: 3) {
+                    Image(systemName: "doc.on.clipboard.fill").font(.system(size: 17, weight: .semibold))
+                    Text("Wklej").font(.system(size: 10, weight: .bold))
+                }
+                .foregroundStyle(pal.accentText)
+                .frame(width: 58, height: 56)
+                .background(pal.accent)
+                .clipShape(RoundedRectangle(cornerRadius: 9))
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 10).padding(.vertical, 6)
+        .padding(.horizontal, 8).padding(.vertical, 6)
         .background(pal.field)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(pal.hairline, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(pal.hairline, lineWidth: 0.5))
     }
 
-    // MARK: - Result mode
+    // MARK: - Result mode (fills the whole area, same footprint as the QWERTY)
 
     private var resultCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text("Tłumaczenie")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(pal.dim)
                 Spacer()
                 Button(action: model.copyResult) {
-                    Label("Kopiuj", systemImage: "doc.on.doc")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(pal.dim)
+                    Label("Kopiuj", systemImage: "doc.on.doc.fill")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(pal.keyText)
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                        .background(pal.bg)
+                        .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 Button(action: model.insertResult) {
                     Label("Wstaw", systemImage: "paperplane.fill")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(pal.accent)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                        .background(pal.accent)
+                        .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
             }
             ScrollView {
                 Text(model.output)
-                    .font(.system(size: 17, weight: .medium))
-                    .foregroundStyle(pal.fieldText)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(pal.translated)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             }
             if let status = model.status {
                 Text(status)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(status.hasPrefix("Wstawiono") || status.hasPrefix("Skopiowano") ? pal.accent : pal.danger)
                     .lineLimit(1)
             }
         }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .padding(14)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(pal.key)
         .clipShape(RoundedRectangle(cornerRadius: 11))
-    }
-
-    /// Copy the result, paste it into WhatsApp yourself (long-press → Wklej), then
-    /// tap this to clear the result and go back to typing the next message.
-    private var resultActions: some View {
-        Button(action: model.clearAll) {
-            Label("Pisz nową wiadomość", systemImage: "square.and.pencil")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(pal.keyText)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                .background(pal.key)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .keyShadow(pal)
-        }
-        .buttonStyle(.plain)
     }
 
     private var optionsCard: some View {
@@ -244,6 +278,8 @@ struct KeyboardView: View {
 struct KBPalette {
     let bg: Color, key: Color, keyText: Color, accent: Color, accentText: Color
     let field: Color, fieldText: Color, dim: Color, hairline: Color, danger: Color
+    /// Translated result text is always this blue, regardless of scheme.
+    let translated: Color
 
     static func forScheme(_ scheme: ColorScheme) -> KBPalette {
         if scheme == .dark {
@@ -251,21 +287,33 @@ struct KBPalette {
                 bg: Color(hex: 0x1C1C1E), key: Color(hex: 0x3A3A3C), keyText: .white,
                 accent: Color(hex: 0x25D366), accentText: .white,
                 field: Color(hex: 0x2C2C2E), fieldText: .white,
-                dim: Color(hex: 0x9AA0A8), hairline: .white.opacity(0.12), danger: Color(hex: 0xFF6B81)
+                dim: Color(hex: 0x9AA0A8), hairline: .white.opacity(0.12), danger: Color(hex: 0xFF6B81),
+                translated: Color(hex: 0x0A84FF)
             )
         }
         return KBPalette(
             bg: Color(hex: 0xD1D4DB), key: .white, keyText: Color(hex: 0x1C1C1E),
             accent: Color(hex: 0x25D366), accentText: .white,
             field: .white, fieldText: Color(hex: 0x1C1C1E),
-            dim: Color(hex: 0x6B7280), hairline: .black.opacity(0.10), danger: Color(hex: 0xE0245E)
+            dim: Color(hex: 0x6B7280), hairline: .black.opacity(0.10), danger: Color(hex: 0xE0245E),
+            translated: Color(hex: 0x007AFF)
         )
     }
 }
 
-private extension View {
-    /// The hard 1pt bottom shadow iOS keys have.
-    func keyShadow(_ pal: KBPalette) -> some View {
-        shadow(color: .black.opacity(0.22), radius: 0, x: 0, y: 1)
+/// A simple caret that blinks like the system text cursor, placed after the
+/// composed text in `inputBox` while there's something typed.
+private struct BlinkingCursor: View {
+    let color: Color
+    @State private var visible = true
+
+    var body: some View {
+        Rectangle()
+            .fill(color)
+            .frame(width: 2, height: 20)
+            .opacity(visible ? 1 : 0)
+            .onReceive(Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()) { _ in
+                visible.toggle()
+            }
     }
 }

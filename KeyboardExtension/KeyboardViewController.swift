@@ -13,10 +13,16 @@ final class KeyboardViewController: UIInputViewController {
 
     /// Match the standard iOS keyboard footprint so we occupy the same space as
     /// the WhatsApp keyboard instead of a small floating panel.
-    private let keyboardHeight: CGFloat = 300
+    private let keyboardHeight: CGFloat = 320
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        // Lets typeCharacter()/backspace() play the system key-click via
+        // UIDevice.playInputClick() — the sanctioned way for a keyboard
+        // extension to make key-press sound (respects the user's Sound
+        // settings, unlike raw AudioServicesPlaySystemSound).
+        enableInputClicksWhenVisible = true
 
         let settings = AppGroupSettings()
         settings.load()
@@ -81,5 +87,6 @@ final class KeyboardViewController: UIInputViewController {
         }
         model.insert = { [weak self] text in self?.textDocumentProxy.insertText(text) }
         model.copyToClipboard = { text in UIPasteboard.general.string = text }
+        model.playClickSound = { UIDevice.current.playInputClick() }
     }
 }
