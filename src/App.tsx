@@ -1,17 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import StreamingAvatar, { AvatarQuality, StreamingEvents, TaskType } from "@heygen/streaming-avatar";
 
 const ELEVEN_KEY = "sk_60b64add4fda15189176b7b96de00030bb9c448b083b2680";
 const ELEVEN_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
-const LIVEAVATAR_KEY = "caecb27a-2628-11f1-8d28-066a7fa2e369";
-const AVATAR_ID = "fc9c1f9f-bc99-4fd9-a6b2-8b4b5669a046";
-
-const G = {
-  bg:"#0d1117",panel:"#111820",card:"#161e28",border:"#1e2d3d",
-  teal:"#00c2a8",tealDim:"#00c2a818",tealMid:"#00c2a840",
-  rose:"#e05a6a",amber:"#f0a340",
-  text:"#e8edf3",textMid:"#7a8fa8",textDim:"#3a4f63",green:"#2ecc8a",
-};
 
 const STEPS:any[]=[
   {id:"welcome",phase:"Powitanie",nurseText:"Dzień dobry! Jestem Anna, Pana wirtualna pielęgniarka pierwszego kontaktu. Zanim trafi Pan do lekarza, przeprowadzę krótki wywiad medyczny. Wszystko jest poufne. Gotowy?",type:"confirm",field:null},
@@ -69,10 +59,7 @@ export default function App(){
   const [error,setError]=useState("");
   const [appPhase,setAppPhase]=useState("interview");
   const [chatLog,setChatLog]=useState<any[]>([]);
-  const [avatarStatus,setAvatarStatus]=useState<"idle"|"loading"|"ready"|"error">("idle");
-  const [avatarError,setAvatarError]=useState("");
-  const videoRef=useRef<HTMLVideoElement>(null);
-  const avatarRef=useRef<StreamingAvatar|null>(null);
+  const [avatarStatus,setAvatarStatus]=useState<"idle"|"loading"|"ready"|"error">("ready");
   const bottomRef=useRef<HTMLDivElement>(null);
   const s=STEPS[step];
   const progress=(step/(STEPS.length-1))*100;
@@ -80,61 +67,16 @@ export default function App(){
 
   useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"})},[chatLog]);
 
-  // Init LiveAvatar on mount
-  useEffect(()=>{
-    initAvatar();
-    return()=>{avatarRef.current?.stopAvatar();};
-  },[]);
-
   useEffect(()=>{
     const st=STEPS[step];if(!st||appPhase!=="interview") return;
     setChatLog((p:any)=>[...p,{role:"nurse",text:st.nurseText}]);
     speakAvatar(st.nurseText);
   },[step,appPhase]);
 
-  async function initAvatar(){
-    setAvatarStatus("loading");
-    try{
-      // Get session token
-      const tokenRes=await fetch("/api/token",{
-      });
-      const tokenData=await tokenRes.json();
-      const token=tokenData.data?.session_token;
-      if(!token) throw new Error("Brak tokenu");
+  // Avatar renders via the LiveAvatar embed (iframe); it loads itself.
+  function initAvatar(){ setAvatarStatus("ready"); }
 
-      const avatar=new StreamingAvatar({token});
-      avatarRef.current=avatar;
-
-      avatar.on(StreamingEvents.STREAM_READY,(e:any)=>{
-        if(videoRef.current&&e.detail){
-          videoRef.current.srcObject=e.detail;
-          videoRef.current.play();
-        }
-        setAvatarStatus("ready");
-      });
-      avatar.on(StreamingEvents.STREAM_DISCONNECTED,()=>setAvatarStatus("idle"));
-
-      await avatar.createStartAvatar({
-        quality:AvatarQuality.High,
-        avatarName:AVATAR_ID,
-        disableIdleTimeout:false,
-      });
-    }catch(e:any){
-      setAvatarStatus("error");
-      setAvatarError(e.message);
-    }
-  }
-
-  async function speakAvatar(text:string){
-    if(avatarRef.current&&avatarStatus==="ready"){
-      try{
-        await avatarRef.current.speak({text,taskType:TaskType.REPEAT});
-        return;
-      }catch{}
-    }
-    // Fallback: ElevenLabs
-    speakElevenLabs(text);
-  }
+  function speakAvatar(text:string){ speakElevenLabs(text); }
 
   async function speakElevenLabs(text:string){
     try{
@@ -249,23 +191,12 @@ export default function App(){
         {/* AVATAR VIDEO */}
         <div style={{width:280,flexShrink:0,display:"flex",flexDirection:"column",gap:14}}>
           <div style={{borderRadius:18,overflow:"hidden",height:340,border:"1px solid #1e2d3d",background:"#111820",position:"relative",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <iframe 
-  src="https://embed.liveavatar.com/v1/2c75530a-7960-47bb-8c3d-2ff29d992ff7"
-  allow="microphone"
-  title="LiveAvatar Anna"
-  style={{width:"100%",height:"100%",border:"none",borderRadius:18}}
-/>
-              style={{width:"100%",height:"100%",objectFit:"cover",display:avatarStatus==="ready"?"block":"none",borderRadius:18}}/>
-            {avatarStatus!=="ready"&&(
-              <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,color:"#7a8fa8"}}>
-                {avatarStatus==="loading"&&<div style={{width:40,height:40,border:"3px solid #00c2a840",borderTop:"3px solid #00c2a8",borderRadius:"50%",animation:"spin 1s linear infinite"}}/>}
-                {avatarStatus==="error"&&<div style={{fontSize:32}}>⚠️</div>}
-                <div style={{fontSize:13,textAlign:"center",padding:"0 16px"}}>
-                  {avatarStatus==="loading"?"Łączę z avatarem Ann...":avatarStatus==="error"?avatarError:"Inicjalizacja..."}
-                </div>
-                {avatarStatus==="error"&&<button onClick={initAvatar} style={{background:"#00c2a818",border:"1px solid #00c2a840",color:"#00c2a8",borderRadius:10,padding:"8px 16px",fontSize:12,cursor:"pointer"}}>Spróbuj ponownie</button>}
-              </div>
-            )}
+            <iframe
+              src="https://embed.liveavatar.com/v1/2c75530a-7960-47bb-8c3d-2ff29d992ff7"
+              allow="microphone"
+              title="LiveAvatar Anna"
+              style={{width:"100%",height:"100%",border:"none",borderRadius:18}}
+            />
           </div>
 
           <div style={{background:"#111820",border:"1px solid #1e2d3d",borderRadius:16,padding:16}}>
